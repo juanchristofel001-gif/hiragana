@@ -10,7 +10,7 @@
 <style>
 /* VOICE: ramah dan lembut, seperti buku latihan kana yang ditemani teman kecil
    IDEA: kertas latihan kana (renshū-chō): kotak dengan garis bantu bersilang
-   PICTURE: Ruri-chan, maskot chibi orisinal yang bereaksi di setiap layar
+   PICTURE: Momo-chan, maskot chibi orisinal yang bereaksi di setiap layar
    COLOUR and TYPE: biru tua + putih, aksen biru terang & koral; Zen Maru Gothic
    LAYOUT: panel kerja di kiri, maskot menempel di kanan; di HP maskot jadi strip atas */
 :root{color-scheme:light dark;
@@ -290,8 +290,8 @@ main{grid-area:main}
 <div class="wrap">
 <aside class="buddy">
   <div class="bubble in" id="bubble" aria-live="polite">Halo!</div>
-  <div class="kana" id="kana" role="button" tabindex="0" aria-label="Colek Ruri-chan" data-m="idle"></div>
-  <div class="moods" id="moods"><span>Coba gerakan Ruri-chan:</span>
+  <div class="kana" id="kana" role="button" tabindex="0" aria-label="Colek Momo-chan" data-m="idle"></div>
+  <div class="moods" id="moods"><span>Coba gerakan Momo-chan:</span>
     <button class="mchip" data-mood="happy">Senang</button><button class="mchip" data-mood="cry">Nangis</button>
     <button class="mchip" data-mood="angry">Marah</button><button class="mchip" data-mood="tongue">Melet</button>
     <button class="mchip" data-mood="shock">Kaget</button><button class="mchip" data-mood="think">Mikir</button>
@@ -302,7 +302,7 @@ main{grid-area:main}
 <main>
   <section class="view" id="v-menu">
     <h1>Hiragana dan katakana, sedikit demi sedikit.</h1>
-    <p class="lead">Lihat tabelnya, hafalkan pakai flashcard, lalu uji diri di kuis. Ruri-chan ikut bereaksi tiap kamu menjawab, mau benar ataupun salah.</p>
+    <p class="lead">Lihat tabelnya, hafalkan pakai flashcard, lalu uji diri di kuis. Momo-chan ikut bereaksi tiap kamu menjawab, mau benar ataupun salah.</p>
     <div class="modes">
       <a class="mode" href="#belajar"><b class="gl">あ</b><span><strong>Belajar</strong><small>Tabel 104 kana, bunyi, dan tips membedakan huruf yang mirip</small></span></a>
       <a class="mode" href="#flashcard"><b class="gl">カ</b><span><strong>Flashcard</strong><small>Balik kartu, tandai yang sudah hafal, yang belum diulang</small></span></a>
@@ -405,13 +405,13 @@ const rec=(sc,h,ok)=>{const k=sc+':'+h,s=stats[k]||{c:0,w:0};ok?s.c++:s.w++;stat
 const poolItems=()=>ITEMS.filter(i=>sel.has(i.row));
 const speak=t=>{try{const u=new SpeechSynthesisUtterance(t);u.lang='ja-JP';u.rate=.8;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}};
 
-/* ---------- Ruri-chan (maskot orisinal) ---------- */
-const SK='#ffe6d5',HR='#1f2c5c',NV='#16357a',NVD='#0b1f47',DK='#2b1a10';
+/* ---------- Momo-chan (maskot orisinal) ---------- */
+const SK='#ffe6d5',HR='#f592b8',HRD='#de6f9b',NV='#16357a',NVD='#0b1f47',DK='#2b1a10';
 const P=(d,f,x='')=>`<path d="${d}" fill="${f}" ${x}/>`;
 const L=(d,w=3,c=DK)=>`<path d="${d}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
 const star=(cx,cy,R,r)=>{let d='';for(let i=0;i<10;i++){const a=Math.PI/5*i-Math.PI/2,q=i%2?r:R;d+=(i?'L':'M')+(cx+q*Math.cos(a)).toFixed(1)+' '+(cy+q*Math.sin(a)).toFixed(1)}return d+'Z'};
 const spark=(x,y,s)=>P(`M${x} ${y-s}Q${x} ${y} ${x+s} ${y}Q${x} ${y} ${x} ${y+s}Q${x} ${y} ${x-s} ${y}Q${x} ${y} ${x} ${y-s}Z`,'#ffd257','class="spk"');
-const eye=(x,dx=0,dy=0)=>`<ellipse cx="${x}" cy="106" rx="9.5" ry="12.5" fill="#0d2a4a"/><ellipse cx="${x+dx}" cy="${108+dy}" rx="6.5" ry="8.5" fill="#33d6e6"/><ellipse cx="${x+dx}" cy="${105+dy}" rx="5.5" ry="3.5" fill="#1497b8" opacity=".55"/><ellipse cx="${x+dx}" cy="${110+dy}" rx="3.6" ry="4.8" fill="#0b4f6e"/><circle cx="${x-3+dx}" cy="${101+dy}" r="3.4" fill="#fff"/><circle cx="${x+3.5+dx}" cy="${113+dy}" r="1.5" fill="#fff"/>`;
+const eye=(x,dx=0,dy=0)=>`<ellipse cx="${x}" cy="106" rx="9.5" ry="12.5" fill="#16264f"/><ellipse cx="${x+dx}" cy="${108+dy}" rx="6.5" ry="8.5" fill="#41c4ff"/><ellipse cx="${x+dx}" cy="${104+dy}" rx="6.5" ry="4.8" fill="#2257b8" opacity=".9"/><ellipse cx="${x+dx}" cy="${110+dy}" rx="3.6" ry="4.8" fill="#0b2350"/><circle cx="${x-3+dx}" cy="${101+dy}" r="3.4" fill="#fff"/><circle cx="${x+3.5+dx}" cy="${113+dy}" r="1.5" fill="#fff"/>`;
 const happyEyes=L('M69 108 Q78 97 87 108',3.6)+L('M113 108 Q122 97 131 108',3.6);
 const bigSmile=P('M89 126 Q100 128 111 126 Q110 141 100 142 Q90 141 89 126Z','#b5323e')+P('M93 136 Q100 131 107 136 Q104 142 100 142 Q96 142 93 136Z','#ff8fa3');
 const FACE={
@@ -436,18 +436,19 @@ const FACE={
    +'<text class="zz" x="140" y="72" font-size="16">z</text><text class="zz" x="150" y="58" font-size="20" style="animation-delay:.8s">z</text><text class="zz" x="160" y="44" font-size="24" style="animation-delay:1.6s">Z</text>'
 };
 const SVG=`<svg viewBox="0 0 200 232" aria-hidden="true"><ellipse cx="100" cy="224" rx="52" ry="7" fill="rgba(15,42,92,.18)"/><g class="bodyg">
-<g class="pony">${P('M126 44 Q178 36 180 100 Q184 152 170 198 Q162 214 150 204 Q168 152 158 106 Q152 70 126 60Z',HR)}${L('M160 70 Q172 110 164 170',2.5,'rgba(255,255,255,.18)')}</g>
-${P('M42 104 C36 54 66 36 100 36 C134 36 164 54 158 104 L157 136 Q148 144 140 136 L140 116 L60 116 L60 136 Q52 144 43 136Z',HR)}
+${P('M40 104 C34 52 66 34 100 34 C134 34 166 52 160 104 C164 124 166 140 158 152 Q152 160 146 152 Q143 161 136 156 L136 118 L64 118 L64 156 Q57 161 54 152 Q48 160 42 152 C34 140 36 124 40 104Z',HRD)}
+<circle cx="56" cy="50" r="15" fill="${HR}"/><circle cx="144" cy="50" r="15" fill="${HR}"/>${L('M48 44 Q54 38 62 40',2.5,'rgba(255,255,255,.45)')}${L('M136 40 Q144 38 150 44',2.5,'rgba(255,255,255,.45)')}
 <rect x="81" y="198" width="14" height="16" rx="6" fill="${SK}"/><rect x="105" y="198" width="14" height="16" rx="6" fill="${SK}"/>
 <ellipse cx="87" cy="217" rx="11" ry="5" fill="${NVD}"/><ellipse cx="113" cy="217" rx="11" ry="5" fill="${NVD}"/>
 ${P('M62 188 L138 188 L150 206 Q100 214 50 206Z',NV)}
 ${P('M66 156 Q100 146 134 156 L142 198 Q100 206 58 198Z','#fbfcff','stroke="#c9d5ee" stroke-width="2"')}
-${P('M80 153 L100 172 L120 153 Q100 161 80 153Z',NV)}${L('M100 172 L100 196',2,'#c9d5ee')}${P(star(100,184,6,2.6),NV)}
+${P('M70 154 L100 176 L130 154 Q138 163 135 173 L100 184 L65 173 Q62 163 70 154Z',NV)}${L('M70 166 L100 180 L130 166',1.6,'#fff')}
+${P('M100 182 L88 175 L88 189Z M100 182 L112 175 L112 189Z',HR)}<circle cx="100" cy="182" r="3.5" fill="${HRD}"/>
 <circle cx="100" cy="100" r="56" fill="${SK}"/>
-${P('M47 98 Q36 140 46 176 Q56 142 60 104Z',HR)}${P('M153 98 Q164 140 154 176 Q144 142 140 104Z',HR)}
-${P('M44 106 C40 58 72 40 104 40 C134 40 158 58 156 100 Q148 86 138 80 Q126 92 110 95 Q118 82 116 70 Q100 88 80 95 Q86 83 88 72 Q72 86 58 93 Q52 98 44 106Z',HR)}
-${L('M66 60 Q100 44 134 58',3,'rgba(255,255,255,.22)')}
-<g transform="translate(146 44)"><path d="M0 0 L-17 -13 Q-22 4 0 0Z M0 0 L17 -15 Q24 3 0 0Z" fill="#fff" stroke="${NV}" stroke-width="2" stroke-linejoin="round"/><path d="M-2 2 L-8 16 M2 2 L9 15" stroke="#fff" stroke-width="4" stroke-linecap="round"/><circle r="4.5" fill="#fff" stroke="${NV}" stroke-width="2"/></g>
+${P('M46 98 Q38 130 46 158 Q52 151 55 157 Q61 130 60 104Z',HR)}${P('M154 98 Q162 130 154 158 Q148 151 145 157 Q139 130 140 104Z',HR)}
+${P('M44 106 C40 58 72 40 100 40 C128 40 160 58 156 106 Q150 92 140 88 Q134 98 124 96 Q120 84 112 82 Q106 96 100 96 Q94 96 88 82 Q80 84 76 96 Q66 98 60 88 Q50 92 44 106Z',HR)}
+${L('M66 60 Q100 44 134 58',3,'rgba(255,255,255,.35)')}
+${P('M134 58 a10 10 0 1 0 10 14 a8 8 0 1 1 -10 -14Z','#ffe17a',`stroke="${NV}" stroke-width="1.8"`)}
 <g class="blush"><ellipse cx="68" cy="124" rx="9" ry="5"/><ellipse cx="132" cy="124" rx="9" ry="5"/></g>
 <g id="face"></g>
 <g class="arm armL"><ellipse cx="60" cy="172" rx="9" ry="17" fill="#fbfcff" stroke="#c9d5ee" stroke-width="2"/><circle cx="60" cy="189" r="7.5" fill="${SK}"/></g>
@@ -631,7 +632,7 @@ const d2b=d=>{const i=d.indexOf(','),mime=(d.slice(0,i).match(/data:([^;]+)/)||[
 function renderCM(){$('#dlg').innerHTML=`<h2 style="font-size:24px">Maskot custom</h2>
  <p class="note">Upload gambar dari perangkatmu. PNG transparan paling bagus, GIF juga bisa. Mood yang kosong memakai gambar <b>Utama</b>; gerakan dan efeknya tetap jalan. Gambar hanya tersimpan di browser ini. Pakai <b>Ekspor</b> lalu <b>Impor</b> untuk memindahkannya ke perangkat lain.</p>
  ${CM.noDb?'<p class="tip">Browser ini tidak mengizinkan penyimpanan (mungkin mode incognito). Gambar akan hilang saat halaman ditutup.</p>':''}
- <label class="tg"><input type="checkbox" id="cmOn" ${CM.on?'checked':''}> Pakai maskot custom (matikan untuk kembali ke Ruri-chan)</label>
+ <label class="tg"><input type="checkbox" id="cmOn" ${CM.on?'checked':''}> Pakai maskot custom (matikan untuk kembali ke Momo-chan)</label>
  <div class="slots">${SLOTS.map(([k,l])=>`<div class="slot"><div class="pv">${CM.urls[k]?`<img src="${CM.urls[k]}" alt="">`:'kosong'}</div><b>${l}</b>
    <label class="btn ghost sm up">${CM.urls[k]?'Ganti':'Pilih gambar'}<input type="file" accept="image/*" data-slot="${k}" hidden></label>${CM.urls[k]?`<button type="button" class="link" data-del="${k}">Hapus</button>`:''}</div>`).join('')}</div>
  <div class="row3"><button type="button" class="btn ghost" data-export>Ekspor maskot</button><label class="btn ghost up">Impor file<input type="file" accept=".json,application/json" data-import hidden></label></div>
