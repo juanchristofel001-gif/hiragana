@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kana Dojo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+/* VOICE: ramah dan lembut, seperti buku latihan kana yang ditemani teman kecil
+   IDEA: kertas latihan kana (renshū-chō): kotak dengan garis bantu bersilang
+   PICTURE: Ruri-chan, maskot chibi orisinal yang bereaksi di setiap layar
+   COLOUR and TYPE: biru tua + putih, aksen biru terang & koral; Zen Maru Gothic
+   LAYOUT: panel kerja di kiri, maskot menempel di kanan; di HP maskot jadi strip atas */
+:root{color-scheme:light dark;
+--bg:light-dark(#f2f5fb,#071530);--card:light-dark(#ffffff,#0e2250);--ink:light-dark(#0c1d44,#eef3ff);
+--mute:light-dark(#56688f,#a3b5da);--line:light-dark(#d9e2f2,#23407c);--soft:light-dark(#e7eefa,#132e66);
+--navy:#10295c;--sel:light-dark(#10295c,#2f66db);--navy2:#1d4291;--ok:#2d8cff;--bad:#ff5468;--sh:0 14px 34px -16px rgba(12,32,80,.45)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:500 16px/1.55 'Zen Maru Gothic',system-ui,sans-serif;overflow-x:clip}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--ok);outline-offset:2px}
+h1{font-size:clamp(30px,4vw,46px);line-height:1.08;margin:0 0 10px;text-wrap:balance;font-weight:900}
+h2{font-size:28px;line-height:1.1;margin:0;font-weight:900}
+.note{color:var(--mute);font-size:14px;margin:8px 0}
+[hidden]{display:none!important}
+
+.top{background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px max(4vw,16px);position:sticky;top:0;z-index:20}
+.logo{color:#fff;text-decoration:none;display:flex;align-items:center;gap:10px;font-weight:900;font-size:19px}
+.mk{width:40px;height:40px;border-radius:13px;background:#fff;color:var(--navy);display:grid;place-items:center;font-size:23px}
+.seg{display:flex;background:rgba(255,255,255,.1);border-radius:999px;padding:4px;gap:2px}
+.seg button{border:0;background:none;color:#c9d7f5;font-weight:700;font-size:15px;padding:8px 14px;border-radius:999px;min-height:40px;cursor:pointer;transition:background .25s,color .25s}
+.seg button.on{background:#fff;color:var(--navy)}
+
+.wrap{display:grid;grid-template-columns:minmax(0,1fr) 290px;grid-template-areas:"main buddy";gap:clamp(18px,3vw,44px);max-width:1240px;margin:0 auto;padding:clamp(20px,3vw,40px) max(4vw,16px) 64px}
+main{grid-area:main}
+.view{animation:vin .4s ease}
+@keyframes vin{from{opacity:0;transform:translateY(8px)}}
+
+.buddy{grid-area:buddy;position:sticky;top:90px;align-self:start;display:flex;flex-direction:column;align-items:center;gap:10px}
+.bubble{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:12px 16px;font-weight:700;position:relative;box-shadow:var(--sh);width:100%;text-align:center;min-height:60px;display:grid;place-items:center}
+.bubble::after{content:'';position:absolute;bottom:-10px;left:50%;width:16px;height:16px;background:var(--card);border-right:2px solid var(--line);border-bottom:2px solid var(--line);transform:translateX(-50%) rotate(45deg)}
+.bubble.in{animation:bin .35s cubic-bezier(.3,1.5,.5,1)}
+@keyframes bin{from{transform:scale(.88);opacity:0}}
+.kana{width:100%;max-width:250px;cursor:pointer;-webkit-tap-highlight-color:transparent;border-radius:24px}
+.kana svg{display:block;width:100%;height:auto;overflow:visible}
+.moods{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.moods span{width:100%;text-align:center;font-size:13px;color:var(--mute)}
+.mchip{border:1.5px solid var(--line);background:var(--card);border-radius:999px;padding:6px 12px;font-size:14px;font-weight:700;cursor:pointer;min-height:36px;white-space:nowrap;transition:.2s}
+.mchip:hover{border-color:var(--navy2);color:var(--navy2)}
+
+/* mascot motion */
+.kana .bodyg{animation:bob 2.8s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}
+@keyframes bob{50%{transform:translateY(-4px) scale(1.01,.99)}}
+.kana[data-m=happy] .bodyg,.kana[data-m=proud] .bodyg{animation:jump .55s ease-in-out 3}
+@keyframes jump{40%{transform:translateY(-16px) scale(.98,1.03)}80%{transform:translateY(0) scale(1.04,.96)}}
+.kana[data-m=angry] .bodyg{animation:shake .3s linear 5}
+@keyframes shake{25%{transform:translateX(-4px) rotate(-1.5deg)}75%{transform:translateX(4px) rotate(1.5deg)}}
+.kana[data-m=cry] .bodyg{animation:sob .5s ease-in-out infinite}
+@keyframes sob{50%{transform:translateY(2px) scale(1.015,.985)}}
+.kana[data-m=tongue] .bodyg{animation:tilt 1.3s ease-in-out infinite}
+@keyframes tilt{50%{transform:rotate(-4deg)}}
+.kana[data-m=shock] .bodyg{animation:pop .45s ease-out}
+@keyframes pop{30%{transform:translateY(-12px) scale(1.05)}}
+.kana[data-m=sleep] .bodyg{animation:bob 4.5s ease-in-out infinite}
+.kana[data-m=think] .bodyg{animation:tilt2 2s ease-in-out infinite}
+@keyframes tilt2{50%{transform:rotate(3deg)}}
+.pony{transform-box:fill-box;transform-origin:20% 5%;animation:swing 3s ease-in-out infinite}@keyframes swing{50%{transform:rotate(4deg)}}
+.kana[data-m=angry] .pony{animation:swing .3s linear infinite}
+.arm{transition:transform .45s cubic-bezier(.3,1.5,.5,1);transform-box:fill-box;transform-origin:50% 6%}
+.kana[data-m=happy] .armL,.kana[data-m=proud] .armL{transform:rotate(140deg)}
+.kana[data-m=happy] .armR,.kana[data-m=proud] .armR{transform:rotate(-140deg)}
+.kana[data-m=cry] .armL{transform:rotate(-158deg)}.kana[data-m=cry] .armR{transform:rotate(158deg)}
+.kana[data-m=angry] .armL{transform:rotate(-24deg)}.kana[data-m=angry] .armR{transform:rotate(24deg)}
+.kana[data-m=tongue] .armR{transform:rotate(172deg)}
+.kana[data-m=shock] .armL{transform:rotate(115deg)}.kana[data-m=shock] .armR{transform:rotate(-115deg)}
+.kana[data-m=think] .armR{transform:rotate(165deg)}
+.blush{fill:#ff9fb2;opacity:.55;transition:.3s}
+.kana[data-m=angry] .blush{fill:#ff5a70;opacity:.85}
+.kana[data-m=sleep] .blush{opacity:.3}
+.drip{animation:drip 1s ease-in infinite}
+@keyframes drip{to{transform:translateY(28px);opacity:0}}
+.tear{animation:tearw .6s ease-in-out infinite alternate}
+@keyframes tearw{to{opacity:.6}}
+.zz,.qm{fill:var(--ink);font-family:'Zen Maru Gothic',sans-serif;font-weight:900}
+.zz{opacity:0;animation:zz 2.4s ease-in-out infinite}
+@keyframes zz{30%{opacity:1}100%{opacity:0;transform:translate(14px,-24px)}}
+.qm{animation:fl 1.6s ease-in-out infinite}
+@keyframes fl{50%{transform:translateY(-5px)}}
+.spk{fill:#ffd257;animation:tw 1s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes tw{50%{transform:scale(.4) rotate(45deg);opacity:.5}}
+.vein{animation:pulse .45s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes pulse{50%{transform:scale(1.25)}}
+
+/* buttons */
+.btn{border:2px solid transparent;border-radius:16px;padding:12px 20px;min-height:48px;font-weight:900;font-size:16px;cursor:pointer;transition:transform .15s,background .2s,box-shadow .2s}
+.btn:active{transform:scale(.97)}
+.pri{background:var(--navy);color:#fff;box-shadow:0 8px 18px -10px rgba(16,41,92,.8)}
+:root:not([data-theme=light]) .pri{background:light-dark(var(--navy),#fff);color:light-dark(#fff,var(--navy))}
+.pri:hover{background:var(--navy2);color:#fff}
+.ghost{background:var(--card);border-color:var(--line)}
+.ghost:hover{border-color:var(--navy2)}
+.bad{background:var(--card);border-color:var(--bad);color:var(--bad)}
+.sm{min-height:40px;padding:6px 14px;font-size:14px}
+.link{border:0;background:none;color:var(--ok);font-weight:700;cursor:pointer;font-size:14px;padding:6px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.tabs button{border:2px solid var(--line);background:var(--card);border-radius:999px;padding:8px 16px;min-height:44px;font-weight:700;cursor:pointer;transition:.2s}
+.tabs button.on{background:var(--sel);border-color:var(--sel);color:#fff}
+
+/* menu */
+.lead{font-size:17px;color:var(--mute);max-width:60ch;margin:0 0 22px}
+.modes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.mode{display:flex;flex-direction:column;gap:14px;padding:20px;border-radius:24px;background:var(--card);border:2px solid var(--line);text-decoration:none;color:inherit;box-shadow:var(--sh);transition:transform .25s,border-color .25s}
+.mode:hover{transform:translateY(-4px);border-color:var(--navy2)}
+.mode .gl{width:72px;height:72px;border-radius:20px;background:var(--navy);color:#fff;display:grid;place-items:center;font-size:40px;font-weight:900}
+.mode strong{display:block;font-size:21px}
+.mode small{display:block;color:var(--mute);font-size:14px;line-height:1.4}
+.panel{margin-top:22px;background:var(--card);border:2px solid var(--line);border-radius:24px;padding:20px}
+.panel h3{margin:0 0 12px;font-size:20px}
+.pg{margin-bottom:14px}
+.pgh{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.pgs{font-size:13px;color:var(--mute)}
+.meter{height:10px;border-radius:99px;background:var(--soft);overflow:hidden;margin:6px 0}
+.meter i{display:block;height:100%;background:linear-gradient(90deg,var(--navy2),var(--ok));border-radius:99px;transition:width .5s ease}
+.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:6px}
+.kpis div{background:var(--soft);border-radius:16px;padding:12px;text-align:center}
+.kpis b{display:block;font-size:26px;font-weight:900}
+.kpis span{font-size:13px;color:var(--mute)}
+
+/* table */
+.vh{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.ktable{display:grid;gap:8px;margin-top:12px}
+.kr{display:grid;gap:8px;align-items:stretch}
+.c5{grid-template-columns:52px repeat(5,minmax(0,1fr))}
+.c3{grid-template-columns:52px repeat(3,minmax(0,1fr))}
+.rl{display:grid;place-items:center;font-weight:900;color:var(--mute);font-size:15px}
+.hd .rl,.hd span{font-size:13px;color:var(--mute);text-align:center;font-weight:700}
+.kc{position:relative;border:2px solid var(--line);background:var(--card);border-radius:16px;padding:8px 4px;min-height:84px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:transform .15s,border-color .2s}
+.kc:hover{transform:translateY(-2px);border-color:var(--navy2)}
+.kc b{font-size:32px;line-height:1.1;font-weight:700}
+.kc i{font-style:normal;font-size:18px;color:var(--mute)}
+.kc small{font-size:13px;color:var(--mute)}
+.kc.m::after{content:'';position:absolute;top:7px;right:7px;width:9px;height:9px;border-radius:50%;background:var(--ok)}
+.kc.empty{border-style:dashed;opacity:.35;cursor:default}
+
+/* overlay */
+.ov{position:fixed;inset:0;background:rgba(6,18,46,.55);display:grid;place-items:center;padding:16px;z-index:50;animation:vin .25s}
+.dlg{background:var(--card);border-radius:28px;padding:22px;width:min(100%,440px);box-shadow:var(--sh)}
+.dg{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.dg div{text-align:center;color:var(--mute);font-size:13px}
+.big{display:grid;place-items:center;aspect-ratio:1;border-radius:20px;font-size:84px;color:var(--ink);font-weight:700;border:2px solid var(--line)}
+.grid-paper{background:linear-gradient(var(--line),var(--line)) center/100% 1px no-repeat,linear-gradient(var(--line),var(--line)) center/1px 100% no-repeat,var(--card)}
+.rom{font-size:30px;font-weight:900;text-align:center;margin:14px 0 6px}
+.rom small{display:block;font-size:14px;color:var(--mute);font-weight:700}
+.tip{background:var(--soft);border-radius:14px;padding:10px 14px;font-size:14px;margin:8px 0}
+.row3{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.row3 .btn{flex:1 1 120px}
+
+/* picker */
+.pgrp{margin:12px 0}
+.pgt{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:15px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chip{border:2px solid var(--line);background:var(--card);border-radius:14px;min-height:44px;min-width:56px;padding:4px 10px;cursor:pointer;font-size:19px;font-weight:700;transition:.2s}
+.chip small{font-size:12px;color:var(--mute);margin-left:3px}
+.chip.on{background:var(--sel);border-color:var(--sel);color:#fff}
+.chip.on small{color:#bcd0f5}
+.setup{background:var(--card);border:2px solid var(--line);border-radius:24px;padding:20px;margin-top:14px}
+.opt{margin-bottom:14px}
+.lbl{display:block;font-weight:900;margin-bottom:6px}
+.setup .btn.pri{width:100%;margin-top:10px}
+
+/* play */
+.bar{display:flex;align-items:center;gap:12px}
+.bar .meter{flex:1}
+.bar>span{font-weight:900;white-space:nowrap}
+.pill{background:var(--soft);border-radius:99px;padding:4px 12px;font-size:14px}
+.fc{display:block;width:min(100%,340px);aspect-ratio:4/5;margin:20px auto 6px;border:0;background:none;perspective:1000px;cursor:pointer;padding:0}
+.fc .inner{position:relative;display:block;width:100%;height:100%;transition:transform .6s cubic-bezier(.3,1.3,.5,1);transform-style:preserve-3d}
+.fc.flip .inner{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border-radius:30px;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:var(--sh)}
+.front{border:2px solid var(--line)}
+.front b{font-size:clamp(100px,28vw,150px);line-height:1;font-weight:700}
+.front small,.back small{font-size:13px;color:var(--mute);padding:0 18px;text-align:center}
+.back{background:var(--navy);color:#fff;transform:rotateY(180deg)}
+.back b{font-size:64px;font-weight:900;line-height:1}
+.back span{font-size:20px}
+.back small{color:#c3d3f3}
+.kb{text-align:center}
+.qcard{position:relative;margin:18px 0 14px;border:2px solid var(--line);border-radius:28px;min-height:210px;display:grid;place-items:center;box-shadow:var(--sh)}
+.ask{font-size:clamp(90px,22vw,128px);line-height:1;font-weight:700}
+.ask.r{font-size:clamp(54px,12vw,76px);font-weight:900}
+.combo{position:absolute;top:12px;right:14px;font-weight:900;color:var(--ok);font-size:15px}
+.choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.ch{border:2px solid var(--line);background:var(--card);border-radius:18px;min-height:70px;font-size:26px;font-weight:900;cursor:pointer;transition:transform .15s,background .2s,border-color .2s;position:relative}
+.ch.k{font-size:38px;font-weight:700}
+.ch:hover:not(:disabled){border-color:var(--navy2);transform:translateY(-2px)}
+.ch .n{position:absolute;top:6px;left:10px;font-size:12px;color:var(--mute);font-weight:700}
+.ch.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.ch.no{background:var(--bad);border-color:var(--bad);color:#fff;animation:nope .3s}
+.ch.ok .n,.ch.no .n{color:#fff}
+.ch:disabled{cursor:default}
+@keyframes nope{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.tform{display:flex;gap:10px}
+.tform input{flex:1;font:700 22px 'Zen Maru Gothic',sans-serif;padding:10px 16px;border-radius:16px;border:2px solid var(--line);background:var(--card);color:var(--ink);min-height:56px}
+.tform input:focus{outline:none;border-color:var(--ok)}
+.fb{min-height:30px;text-align:center;font-weight:900;margin-top:12px}
+.fb.ok{color:var(--ok)}.fb.no{color:var(--bad)}
+.end{justify-content:space-between}
+.end .btn{flex:0 0 auto}
+.done{text-align:center;background:var(--card);border:2px solid var(--line);border-radius:28px;padding:26px 20px;margin-top:14px}
+.done .sc{font-size:clamp(56px,12vw,84px);font-weight:900;line-height:1}
+.wl{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:12px 0}
+.wl span{background:var(--soft);border-radius:12px;padding:6px 10px;font-size:20px;font-weight:700}
+.wl small{font-size:13px;color:var(--mute);margin-left:4px}
+
+@media(max-width:820px){
+ .top{position:static}
+ .wrap{grid-template-columns:minmax(0,1fr);grid-template-areas:"buddy" "main";padding-top:0}
+ .buddy{position:sticky;top:0;z-index:15;display:grid;grid-template-columns:88px minmax(0,1fr);grid-template-areas:"k b" "m m";align-items:center;gap:4px 14px;background:var(--bg);margin:0 calc(-1 * max(4vw,16px));padding:10px max(4vw,16px);border-bottom:1px solid var(--line)}
+ .kana{grid-area:k;max-width:88px}
+ .bubble{grid-area:b;min-height:0;text-align:left;font-size:15px;place-items:center start;box-shadow:none}
+ .bubble::after{left:-10px;top:50%;bottom:auto;transform:translateY(-50%) rotate(135deg)}
+ .moods{grid-area:m;flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;padding-bottom:2px}
+ .moods span{display:none}
+ body:not([data-v=menu]) .moods{display:none}
+ main{padding-top:16px}
+}
+@media(max-width:600px){
+ .modes{grid-template-columns:minmax(0,1fr)}
+ .mode{flex-direction:row;align-items:center;padding:14px}
+ .mode .gl{width:58px;height:58px;font-size:32px;flex:none}
+ .c5{grid-template-columns:34px repeat(5,minmax(0,1fr))}.c3{grid-template-columns:34px repeat(3,minmax(0,1fr))}
+ .kr,.ktable{gap:5px}
+ .kc{min-height:66px;border-radius:12px;padding:4px 2px}
+ .kc b{font-size:24px}.kc i{font-size:14px}
+ .rl{font-size:12px}
+ .seg button{padding:8px 10px;font-size:14px}
+ .kpis b{font-size:21px}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.zz{opacity:1}}
+</style>
+</head>
+<body data-v="menu">
+<header class="top">
+  <a class="logo" href="#menu"><span class="mk">か</span><span>Kana Dojo</span></a>
+  <div class="seg" id="seg" aria-label="Pilih huruf">
+    <button data-s="h">ひらがな</button><button data-s="k">カタカナ</button><button data-s="mix">Campur</button>
+  </div>
+</header>
+
+<div class="wrap">
+<aside class="buddy">
+  <div class="bubble in" id="bubble" aria-live="polite">Halo!</div>
+  <div class="kana" id="kana" role="button" tabindex="0" aria-label="Colek Ruri-chan" data-m="idle"></div>
+  <div class="moods" id="moods"><span>Coba gerakan Ruri-chan:</span>
+    <button class="mchip" data-mood="happy">Senang</button><button class="mchip" data-mood="cry">Nangis</button>
+    <button class="mchip" data-mood="angry">Marah</button><button class="mchip" data-mood="tongue">Melet</button>
+    <button class="mchip" data-mood="shock">Kaget</button><button class="mchip" data-mood="think">Mikir</button>
+    <button class="mchip" data-mood="proud">Bangga</button><button class="mchip" data-mood="sleep">Tidur</button>
+  </div>
+</aside>
+
+<main>
+  <section class="view" id="v-menu">
+    <h1>Hiragana dan katakana, sedikit demi sedikit.</h1>
+    <p class="lead">Lihat tabelnya, hafalkan pakai flashcard, lalu uji diri di kuis. Ruri-chan ikut bereaksi tiap kamu menjawab, mau benar ataupun salah.</p>
+    <div class="modes">
+      <a class="mode" href="#belajar"><b class="gl">あ</b><span><strong>Belajar</strong><small>Tabel 104 kana, bunyi, dan tips membedakan huruf yang mirip</small></span></a>
+      <a class="mode" href="#flashcard"><b class="gl">カ</b><span><strong>Flashcard</strong><small>Balik kartu, tandai yang sudah hafal, yang belum diulang</small></span></a>
+      <a class="mode" href="#kuis"><b class="gl">？</b><span><strong>Kuis</strong><small>Pilihan ganda dua arah atau ketik romaji, lengkap dengan combo</small></span></a>
+    </div>
+    <div class="panel"><h3>Progres kamu</h3><div id="prog"></div>
+      <p class="note">Sebuah kana dihitung “dikuasai” kalau sudah dijawab benar minimal 3 kali di kuis dengan akurasi ≥ 80%. Progres hanya tersimpan di browser ini.</p></div>
+  </section>
+
+  <section class="view" id="v-belajar" hidden>
+    <div class="vh"><h2>Tabel kana</h2>
+      <div class="tabs" id="gtabs"><button data-g="dasar" class="on">Dasar</button><button data-g="daku">Dakuten</button><button data-g="yoon">Yōon</button></div></div>
+    <p class="note">Ketuk huruf untuk detail dan bunyinya. Titik biru berarti sudah dikuasai.</p>
+    <div id="ktable" class="ktable"></div>
+  </section>
+
+  <section class="view" id="v-flashcard" hidden>
+    <div id="fSetup"><h2>Flashcard</h2>
+      <div class="setup"><span class="lbl">Baris yang mau dilatih</span><div data-p></div><button class="btn pri" id="fStart">Mulai flashcard</button></div></div>
+    <div id="fPlay" hidden>
+      <div class="bar"><span id="fPos"></span><div class="meter"><i id="fMeter"></i></div><button class="btn ghost sm" id="fQuit">Selesai</button></div>
+      <button class="fc" id="fc" aria-label="Balik kartu"><span class="inner">
+        <span class="face front grid-paper"><b id="fFront"></b><small>Ketuk untuk membalik</small></span>
+        <span class="face back"><b id="fBack"></b><span id="fOther"></span><small id="fNote"></small></span></span></button>
+      <div class="row3"><button class="btn bad" id="fNo">Belum hafal</button><button class="btn ghost" id="fSay">Dengar</button><button class="btn pri" id="fYes">Hafal</button></div>
+      <p class="note kb">Keyboard: Spasi untuk membalik · ← belum · → hafal</p>
+    </div>
+    <div id="fDone" hidden></div>
+  </section>
+
+  <section class="view" id="v-kuis" hidden>
+    <div id="qSetup"><h2>Kuis</h2>
+      <div class="setup">
+        <div class="opt"><span class="lbl">Jenis soal</span><div class="tabs" id="qMode"><button data-m="k2r">Kana → romaji</button><button data-m="r2k">Romaji → kana</button><button data-m="type">Ketik romaji</button></div></div>
+        <div class="opt"><span class="lbl">Jumlah soal</span><div class="tabs" id="qCount"><button data-n="10">10</button><button data-n="20">20</button><button data-n="30">30</button></div></div>
+        <span class="lbl">Baris</span><div data-p></div>
+        <button class="btn pri" id="qStart">Mulai kuis</button>
+      </div></div>
+    <div id="qPlay" hidden>
+      <div class="bar"><span id="qPos"></span><div class="meter"><i id="qMeter"></i></div><span id="qScore" class="pill"></span></div>
+      <div class="qcard grid-paper"><div id="qAsk" class="ask"></div><span id="qCombo" class="combo"></span></div>
+      <div id="qChoices" class="choices"></div>
+      <form id="qForm" class="tform" hidden><input id="qIn" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="ketik romaji…" aria-label="Jawaban romaji"><button class="btn pri">Cek</button></form>
+      <div class="fb" id="qFb" aria-live="polite"></div>
+      <div class="row3 end"><button class="btn ghost sm" id="qQuit">Berhenti</button><button class="btn pri" id="qNext" hidden>Lanjut →</button></div>
+    </div>
+    <div id="qDone" hidden></div>
+  </section>
+</main>
+</div>
+
+<div class="ov" id="ov" hidden><div class="dlg" role="dialog" aria-modal="true" aria-label="Detail kana" id="dlg"></div></div>
+
+<script>
+(()=>{
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const store={get(k,d){try{const v=localStorage.getItem('kd_'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kd_'+k,JSON.stringify(v))}catch(e){}}};
+const pick=a=>a[Math.random()*a.length|0];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const toK=s=>[...s].map(c=>{const n=c.charCodeAt(0);return n>=0x3041&&n<=0x3096?String.fromCharCode(n+0x60):c}).join('');
+
+/* ---------- data ---------- */
+const ROWS=[
+['a','dasar','あ い う え お','a i u e o'],['ka','dasar','か き く け こ','ka ki ku ke ko'],['sa','dasar','さ し す せ そ','sa shi su se so'],
+['ta','dasar','た ち つ て と','ta chi tsu te to'],['na','dasar','な に ぬ ね の','na ni nu ne no'],['ha','dasar','は ひ ふ へ ほ','ha hi fu he ho'],
+['ma','dasar','ま み む め も','ma mi mu me mo'],['ya','dasar','や - ゆ - よ','ya - yu - yo'],['ra','dasar','ら り る れ ろ','ra ri ru re ro'],
+['wa','dasar','わ - - - を','wa - - - wo'],['n','dasar','ん - - - -','n - - - -'],
+['ga','daku','が ぎ ぐ げ ご','ga gi gu ge go'],['za','daku','ざ じ ず ぜ ぞ','za ji zu ze zo'],['da','daku','だ ぢ づ で ど','da ji zu de do'],
+['ba','daku','ば び ぶ べ ぼ','ba bi bu be bo'],['pa','daku','ぱ ぴ ぷ ぺ ぽ','pa pi pu pe po'],
+['kya','yoon','きゃ きゅ きょ','kya kyu kyo'],['sha','yoon','しゃ しゅ しょ','sha shu sho'],['cha','yoon','ちゃ ちゅ ちょ','cha chu cho'],
+['nya','yoon','にゃ にゅ にょ','nya nyu nyo'],['hya','yoon','ひゃ ひゅ ひょ','hya hyu hyo'],['mya','yoon','みゃ みゅ みょ','mya myu myo'],
+['rya','yoon','りゃ りゅ りょ','rya ryu ryo'],['gya','yoon','ぎゃ ぎゅ ぎょ','gya gyu gyo'],['ja','yoon','じゃ じゅ じょ','ja ju jo'],
+['bya','yoon','びゃ びゅ びょ','bya byu byo'],['pya','yoon','ぴゃ ぴゅ ぴょ','pya pyu pyo']];
+const GRP={dasar:'Dasar (gojūon)',daku:'Dakuten & handakuten',yoon:'Yōon (kombinasi)'};
+const ITEMS=[],RM={};
+ROWS.forEach(([id,g,ks,rs])=>{const k=ks.split(' '),r=rs.split(' ');const cells=k.map((c,i)=>c==='-'?null:{h:c,r:r[i],row:id,g});
+  RM[id]={id,g,cells,label:g==='yoon'?k[0]:k[0]+'行'};cells.forEach(c=>c&&ITEMS.push(c))});
+const ALT={shi:['si'],chi:['ti'],tsu:['tu'],fu:['hu'],ji:['zi','di'],zu:['du'],wo:['o'],n:['nn'],sha:['sya'],shu:['syu'],sho:['syo'],
+  cha:['tya','cya'],chu:['tyu','cyu'],cho:['tyo','cyo'],ja:['zya','jya'],ju:['zyu','jyu'],jo:['zyo','jyo']};
+const EXTRA={'を':'dibaca “o”, hampir selalu sebagai partikel','ぢ':'jarang dipakai, bunyinya sama dengan じ','づ':'jarang dipakai, bunyinya sama dengan ず',
+  'は':'sebagai partikel dibaca “wa”','へ':'sebagai partikel dibaca “e”','ん':'satu-satunya kana yang berupa konsonan saja'};
+const SIM={'ぬ':'Mirip め; ぬ punya lingkaran kecil di ujung bawah.','め':'Mirip ぬ; め tidak punya lingkaran di ujung.',
+ 'わ':'Mirip れ dan ね; ujung わ melengkung ke dalam.','れ':'Mirip わ dan ね; ujung れ melengkung keluar.','ね':'Mirip れ dan わ; ね diakhiri lingkaran kecil.',
+ 'る':'Mirip ろ; る diakhiri lingkaran kecil.','ろ':'Mirip る; ろ tanpa lingkaran.','さ':'Mirip ち (seperti dicerminkan) dan き.',
+ 'ち':'Mirip さ yang dicerminkan.','き':'Mirip さ; き punya dua garis mendatar.','は':'Mirip ほ; ほ punya garis atas tambahan.',
+ 'ほ':'Mirip は; ほ punya garis atas tambahan.','い':'Mirip り; garis kanan り lebih panjang.','り':'Mirip い; garis kanan り lebih panjang.',
+ 'あ':'Mirip お; あ punya garis silang di atas.','お':'Mirip あ; お punya titik di kanan atas.',
+ 'シ':'Mirip ツ; dua goresan pendek シ bertumpuk di kiri, goresan panjang ditarik naik.','ツ':'Mirip シ; dua goresan pendek ツ berjajar di atas, goresan panjang ditarik turun.',
+ 'ソ':'Mirip ン; goresan panjang ソ ditarik turun dari atas.','ン':'Mirip ソ; goresan panjang ン ditarik naik dari bawah.',
+ 'ク':'Mirip ケ dan タ.','タ':'Mirip ク; タ punya goresan tambahan di dalam.','ウ':'Mirip ワ dan フ; ウ punya titik di atas.',
+ 'ワ':'Mirip ウ dan フ.','フ':'Mirip ワ; フ tanpa garis kiri.','ア':'Mirip マ; goresan miring ア lebih panjang.','マ':'Mirip ア.'};
+
+let script=store.get('script','h'), stats=store.get('stats',{}), sel=new Set(store.get('sel',['a','ka','sa']));
+let qMode=store.get('qmode','k2r'), qN=store.get('qn',10), curG='dasar';
+const disp=(it,sc)=>sc==='k'?toK(it.h):it.h;
+const pickSc=()=>script==='mix'?(Math.random()<.5?'h':'k'):script;
+const mastered=(sc,h)=>{const s=stats[sc+':'+h];return !!s&&s.c>=3&&s.c/(s.c+s.w)>=.8};
+const rec=(sc,h,ok)=>{const k=sc+':'+h,s=stats[k]||{c:0,w:0};ok?s.c++:s.w++;stats[k]=s;store.set('stats',stats)};
+const poolItems=()=>ITEMS.filter(i=>sel.has(i.row));
+const speak=t=>{try{const u=new SpeechSynthesisUtterance(t);u.lang='ja-JP';u.rate=.8;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}};
+
+/* ---------- Ruri-chan (maskot orisinal) ---------- */
+const SK='#ffe6d5',HR='#1f2c5c',NV='#16357a',NVD='#0b1f47',DK='#2b1a10';
+const P=(d,f,x='')=>`<path d="${d}" fill="${f}" ${x}/>`;
+const L=(d,w=3,c=DK)=>`<path d="${d}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
+const star=(cx,cy,R,r)=>{let d='';for(let i=0;i<10;i++){const a=Math.PI/5*i-Math.PI/2,q=i%2?r:R;d+=(i?'L':'M')+(cx+q*Math.cos(a)).toFixed(1)+' '+(cy+q*Math.sin(a)).toFixed(1)}return d+'Z'};
+const spark=(x,y,s)=>P(`M${x} ${y-s}Q${x} ${y} ${x+s} ${y}Q${x} ${y} ${x} ${y+s}Q${x} ${y} ${x-s} ${y}Q${x} ${y} ${x} ${y-s}Z`,'#ffd257','class="spk"');
+const eye=(x,dx=0,dy=0)=>`<ellipse cx="${x}" cy="106" rx="9.5" ry="12.5" fill="#0d2a4a"/><ellipse cx="${x+dx}" cy="${108+dy}" rx="6.5" ry="8.5" fill="#33d6e6"/><ellipse cx="${x+dx}" cy="${105+dy}" rx="5.5" ry="3.5" fill="#1497b8" opacity=".55"/><ellipse cx="${x+dx}" cy="${110+dy}" rx="3.6" ry="4.8" fill="#0b4f6e"/><circle cx="${x-3+dx}" cy="${101+dy}" r="3.4" fill="#fff"/><circle cx="${x+3.5+dx}" cy="${113+dy}" r="1.5" fill="#fff"/>`;
+const happyEyes=L('M69 108 Q78 97 87 108',3.6)+L('M113 108 Q122 97 131 108',3.6);
+const bigSmile=P('M89 126 Q100 128 111 126 Q110 141 100 142 Q90 141 89 126Z','#b5323e')+P('M93 136 Q100 131 107 136 Q104 142 100 142 Q96 142 93 136Z','#ff8fa3');
+const FACE={
+ idle: eye(78)+eye(122)+L('M93 130 Q100 136 107 130',2.6),
+ happy: happyEyes+bigSmile+spark(160,70,7)+spark(40,78,5),
+ proud: P(star(78,106,12,5.5),'#ffc94a',`stroke="${DK}" stroke-width="2" stroke-linejoin="round"`)+P(star(122,106,12,5.5),'#ffc94a',`stroke="${DK}" stroke-width="2" stroke-linejoin="round"`)+bigSmile+spark(162,64,9)+spark(36,74,7)+spark(150,30,6)+spark(52,30,5),
+ cry: L('M68 96 Q77 92 87 88',2.6)+L('M132 96 Q123 92 113 88',2.6)+L('M70 105 Q78 111 86 105',3.4)+L('M114 105 Q122 111 130 105',3.4)
+   +P('M73 110 h9 v40 q-4.5 7 -9 0Z','#8fd0ff','class="tear" opacity=".9"')+P('M118 110 h9 v40 q-4.5 7 -9 0Z','#8fd0ff','class="tear" opacity=".9"')
+   +'<circle class="drip" cx="77" cy="154" r="3.5" fill="#8fd0ff"/><circle class="drip" cx="123" cy="154" r="3.5" fill="#8fd0ff" style="animation-delay:.5s"/>'
+   +P('M88 132 Q94 124 100 128 Q106 124 112 132 Q100 141 88 132Z','#8f2a33'),
+ angry: eye(78,1,2)+eye(122,-1,2)+P('M66 90 L92 100 L92 88 L66 88Z',SK)+P('M134 90 L108 100 L108 88 L134 88Z',SK)
+   +L('M67 91 L90 99',4.2)+L('M133 91 L110 99',4.2)+P('M90 135 Q100 125 110 135 Q100 131 90 135Z','#8f2a33')
+   +`<g class="vein">${L('M147 60 Q152 65 157 60',3.2,'#e5303f')+L('M147 76 Q152 71 157 76',3.2,'#e5303f')+L('M144 63 Q149 68 144 73',3.2,'#e5303f')+L('M160 63 Q155 68 160 73',3.2,'#e5303f')}</g>`,
+ tongue: eye(78)+L('M114 100 L129 106 L114 112',3.4)+L('M91 129 Q100 133 109 129',2.6)
+   +P('M95 130 Q95 143 101 143 Q107 143 106 130Z','#ff7d95')+L('M101 133 L101 139',1.3,'#e05a75'),
+ shock: `<circle cx="78" cy="106" r="11" fill="#fff" stroke="${DK}" stroke-width="2.6"/><circle cx="78" cy="106" r="3.2" fill="${DK}"/><circle cx="122" cy="106" r="11" fill="#fff" stroke="${DK}" stroke-width="2.6"/><circle cx="122" cy="106" r="3.2" fill="${DK}"/>`
+   +L('M68 86 Q77 80 87 85',2.6)+L('M132 86 Q123 80 113 85',2.6)+'<ellipse cx="100" cy="134" rx="6" ry="8" fill="#8f2a33"/>'
+   +P('M150 76 Q157 87 154 92 Q150 96 146 92 Q143 87 150 76Z','#9fd6ff'),
+ think: eye(78,-2,-3)+eye(122,-2,-3)+L('M68 92 Q77 89 87 92',2.4)+L('M113 88 Q122 83 132 87',2.4)+L('M95 132 Q100 129 106 131',2.6)
+   +'<text class="qm" x="150" y="62" font-size="30">?</text>',
+ sleep: L('M70 106 Q78 112 86 106',3)+L('M114 106 Q122 112 130 106',3)+'<ellipse cx="100" cy="132" rx="3.5" ry="3" fill="#8f2a33"/>'
+   +'<text class="zz" x="140" y="72" font-size="16">z</text><text class="zz" x="150" y="58" font-size="20" style="animation-delay:.8s">z</text><text class="zz" x="160" y="44" font-size="24" style="animation-delay:1.6s">Z</text>'
+};
+const SVG=`<svg viewBox="0 0 200 232" aria-hidden="true"><ellipse cx="100" cy="224" rx="52" ry="7" fill="rgba(15,42,92,.18)"/><g class="bodyg">
+<g class="pony">${P('M126 44 Q178 36 180 100 Q184 152 170 198 Q162 214 150 204 Q168 152 158 106 Q152 70 126 60Z',HR)}${L('M160 70 Q172 110 164 170',2.5,'rgba(255,255,255,.18)')}</g>
+${P('M42 104 C36 54 66 36 100 36 C134 36 164 54 158 104 L157 136 Q148 144 140 136 L140 116 L60 116 L60 136 Q52 144 43 136Z',HR)}
+<rect x="81" y="198" width="14" height="16" rx="6" fill="${SK}"/><rect x="105" y="198" width="14" height="16" rx="6" fill="${SK}"/>
+<ellipse cx="87" cy="217" rx="11" ry="5" fill="${NVD}"/><ellipse cx="113" cy="217" rx="11" ry="5" fill="${NVD}"/>
+${P('M62 188 L138 188 L150 206 Q100 214 50 206Z',NV)}
+${P('M66 156 Q100 146 134 156 L142 198 Q100 206 58 198Z','#fbfcff','stroke="#c9d5ee" stroke-width="2"')}
+${P('M80 153 L100 172 L120 153 Q100 161 80 153Z',NV)}${L('M100 172 L100 196',2,'#c9d5ee')}${P(star(100,184,6,2.6),NV)}
+<circle cx="100" cy="100" r="56" fill="${SK}"/>
+${P('M47 98 Q36 140 46 176 Q56 142 60 104Z',HR)}${P('M153 98 Q164 140 154 176 Q144 142 140 104Z',HR)}
+${P('M44 106 C40 58 72 40 104 40 C134 40 158 58 156 100 Q148 86 138 80 Q126 92 110 95 Q118 82 116 70 Q100 88 80 95 Q86 83 88 72 Q72 86 58 93 Q52 98 44 106Z',HR)}
+${L('M66 60 Q100 44 134 58',3,'rgba(255,255,255,.22)')}
+<g transform="translate(146 44)"><path d="M0 0 L-17 -13 Q-22 4 0 0Z M0 0 L17 -15 Q24 3 0 0Z" fill="#fff" stroke="${NV}" stroke-width="2" stroke-linejoin="round"/><path d="M-2 2 L-8 16 M2 2 L9 15" stroke="#fff" stroke-width="4" stroke-linecap="round"/><circle r="4.5" fill="#fff" stroke="${NV}" stroke-width="2"/></g>
+<g class="blush"><ellipse cx="68" cy="124" rx="9" ry="5"/><ellipse cx="132" cy="124" rx="9" ry="5"/></g>
+<g id="face"></g>
+<g class="arm armL"><ellipse cx="60" cy="172" rx="9" ry="17" fill="#fbfcff" stroke="#c9d5ee" stroke-width="2"/><circle cx="60" cy="189" r="7.5" fill="${SK}"/></g>
+<g class="arm armR"><ellipse cx="140" cy="172" rx="9" ry="17" fill="#fbfcff" stroke="#c9d5ee" stroke-width="2"/><circle cx="140" cy="189" r="7.5" fill="${SK}"/></g>
+</g></svg>`;
+const kana=$('#kana');kana.innerHTML=SVG;const face=kana.querySelector('#face');face.innerHTML=FACE.idle;
+let moodT=0,idleT=0;
+function say(t){const b=$('#bubble');b.classList.remove('in');void b.offsetWidth;b.textContent=t;b.classList.add('in')}
+function mood(m,txt,ms=2600){clearTimeout(moodT);kana.removeAttribute('data-m');void kana.offsetWidth;kana.dataset.m=m;face.innerHTML=FACE[m];
+  if(txt)say(txt);if(ms&&m!=='idle')moodT=setTimeout(()=>{kana.dataset.m='idle';face.innerHTML=FACE.idle},ms)}
+function nudgeIdle(){clearTimeout(idleT);idleT=setTimeout(()=>mood('sleep','Zzz… panggil aku kalau mau latihan lagi ya…',0),45000)}
+addEventListener('pointerdown',e=>{if(kana.dataset.m==='sleep'&&!kana.contains(e.target))mood('shock','Eh?! Aku nggak tidur kok!');nudgeIdle()},true);
+addEventListener('keydown',nudgeIdle,true);
+const POKE=[['angry','Mou! Jangan colek-colek pipiku!'],['tongue','Bweee~ nggak kena!'],['shock','Kya! Kaget tahu!'],['happy','Ehehe~ semangat belajarnya ya!'],['cry','Huee… sakit tahu…'],['think','Hmm? Ada yang mau ditanya?']];
+const pokeK=()=>{if(kana.dataset.m==='sleep'){mood('shock','Hwah?! A-aku cuma merem sebentar!');return}const p=pick(POKE);mood(p[0],p[1])};
+kana.addEventListener('click',pokeK);kana.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();pokeK()}});
+const MLINE={happy:'Yatta! Aku senang banget!',cry:'Uwaaan… kenapa salah terus…',angry:'Mou~! Fokus dong!',tongue:'Bwee~ week!',shock:'Eh?! Seriusan?',think:'Hmm… ini dibaca apa ya…',proud:'Sugoi! Kamu hebat!',sleep:'Zzz…'};
+$('#moods').addEventListener('click',e=>{const b=e.target.closest('[data-mood]');if(b)mood(b.dataset.mood,MLINE[b.dataset.mood],b.dataset.mood==='sleep'?3500:2800)});
+
+/* ---------- script toggle ---------- */
+function setScript(s){script=s;store.set('script',s);$$('#seg button').forEach(b=>b.classList.toggle('on',b.dataset.s===s));renderTable();renderPickers()}
+$('#seg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;setScript(b.dataset.s);
+  mood('happy',{h:'Oke, hiragana! ひらがな~',k:'Katakana time! カタカナ~',mix:'Campur? Berani juga kamu~'}[b.dataset.s],1800)});
+
+/* ---------- menu ---------- */
+function renderProg(){const N={dasar:46,daku:25,yoon:33};
+  const row=(sc,name)=>{const m=ITEMS.filter(i=>mastered(sc,i.h));const by=g=>m.filter(i=>i.g===g).length;
+    return `<div class="pg"><div class="pgh"><strong>${name}</strong><span>${m.length} / ${ITEMS.length} dikuasai</span></div><div class="meter"><i style="width:${m.length/ITEMS.length*100}%"></i></div><div class="pgs">Dasar ${by('dasar')}/${N.dasar} · Dakuten ${by('daku')}/${N.daku} · Yōon ${by('yoon')}/${N.yoon}</div></div>`};
+  const ans=Object.values(stats).reduce((a,s)=>a+s.c+s.w,0);
+  $('#prog').innerHTML=row('h','Hiragana')+row('k','Katakana')+`<div class="kpis"><div><b>${store.get('quizzes',0)}</b><span>kuis selesai</span></div><div><b>${store.get('best',0)}%</b><span>skor terbaik</span></div><div><b>${ans}</b><span>jawaban kuis</span></div></div>`}
+function greet(){const h=new Date().getHours();
+  say(h<11?'Ohayō! Pagi-pagi udah belajar, keren~':h<15?'Konnichiwa! Siang ini mau latihan apa?':h<18?'Sore~ satu kuis dulu sebelum istirahat?':'Konbanwa! Belajar malam boleh, asal jangan begadang ya.')}
+
+/* ---------- belajar ---------- */
+function renderTable(){const rows=ROWS.filter(r=>r[1]===curG).map(r=>RM[r[0]]);const yo=curG==='yoon',c=yo?'c3':'c5';
+  const k=script==='k',both=script==='mix';
+  const hd=`<div class="kr ${c} hd"><span class="rl"></span>${(yo?['ya','yu','yo']:['a','i','u','e','o']).map(v=>`<span>${v}</span>`).join('')}</div>`;
+  $('#ktable').innerHTML=hd+rows.map(r=>`<div class="kr ${c}"><span class="rl">${k?toK(r.label):r.label}</span>${r.cells.map(x=>{if(!x)return '<span class="kc empty"></span>';
+    const m=both?mastered('h',x.h)&&mastered('k',x.h):mastered(k?'k':'h',x.h);
+    return `<button class="kc${m?' m':''}" data-h="${x.h}" aria-label="${x.r}"><b>${k?toK(x.h):x.h}</b>${both?`<i>${toK(x.h)}</i>`:''}<small>${x.r}</small></button>`}).join('')}</div>`).join('')}
+$('#gtabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;curG=b.dataset.g;$$('#gtabs button').forEach(x=>x.classList.toggle('on',x===b));renderTable();
+  mood('think',{dasar:'Gojūon: 46 huruf dasar. Mulai dari sini!',daku:'Tambah tenten ゛ jadi bunyi berat, maru ゜ jadi “p”.',yoon:'Huruf kecil ゃゅょ digabung jadi satu suku kata!'}[curG])});
+$('#ktable').addEventListener('click',e=>{const b=e.target.closest('[data-h]');if(b)openDetail(b.dataset.h)});
+let lastFocus=null;
+function openDetail(h){const it=ITEMS.find(i=>i.h===h),k=toK(h),sh=stats['h:'+h]||{c:0,w:0},sk=stats['k:'+h]||{c:0,w:0};
+  const tips=[SIM[h],SIM[k]].filter(Boolean).map(t=>`<div class="tip">${t}</div>`).join('');
+  $('#dlg').innerHTML=`<div class="dg"><div><b class="big grid-paper">${h}</b>Hiragana</div><div><b class="big grid-paper">${k}</b>Katakana</div></div>
+   <p class="rom">${it.r}${EXTRA[h]?`<small>${EXTRA[h]}</small>`:''}</p>${tips}
+   <p class="note" style="text-align:center">Kuis: hiragana ${sh.c} benar / ${sh.w} salah · katakana ${sk.c} benar / ${sk.w} salah</p>
+   <div class="row3"><button class="btn ghost" data-say>Dengar</button><button class="btn pri" data-close>Tutup</button></div>`;
+  lastFocus=document.activeElement;$('#ov').hidden=false;$('#dlg [data-close]').focus();speak(h);
+  mood(pick(['happy','think']),`Ini “${it.r}”. ${pick(['Coba ucapkan bareng aku!','Hafalkan bentuknya ya~','Gampang kan?'])}`)}
+const closeDlg=()=>{$('#ov').hidden=true;lastFocus&&lastFocus.focus()};
+$('#ov').addEventListener('click',e=>{if(e.target.id==='ov'||e.target.closest('[data-close]'))closeDlg();else if(e.target.closest('[data-say]'))speak($('#dlg .big').textContent)});
+
+/* ---------- row picker ---------- */
+function renderPickers(){const lab=id=>{const r=RM[id],g=r.cells.find(Boolean).h;return `${script==='k'?toK(g):g}<small>${id}</small>`};
+  const html=Object.keys(GRP).map(g=>{const rows=ROWS.filter(r=>r[1]===g),all=rows.every(r=>sel.has(r[0]));
+    return `<div class="pgrp"><div class="pgt"><span>${GRP[g]}</span><button type="button" class="link" data-ga="${g}">${all?'Kosongkan':'Pilih semua'}</button></div>
+     <div class="chips">${rows.map(r=>`<button type="button" class="chip${sel.has(r[0])?' on':''}" data-row="${r[0]}" aria-pressed="${sel.has(r[0])}">${lab(r[0])}</button>`).join('')}</div></div>`}).join('')
+   +`<p class="note">${poolItems().length} kana terpilih</p>`;
+  $$('[data-p]').forEach(el=>el.innerHTML=html)}
+document.addEventListener('click',e=>{const r=e.target.closest('[data-row]'),g=e.target.closest('[data-ga]');
+  if(r){const id=r.dataset.row;sel.has(id)?sel.delete(id):sel.add(id)}
+  else if(g){const rows=ROWS.filter(x=>x[1]===g.dataset.ga).map(x=>x[0]),all=rows.every(x=>sel.has(x));rows.forEach(x=>all?sel.delete(x):sel.add(x))}
+  else return;store.set('sel',[...sel]);renderPickers()});
+const needRows=()=>{if(poolItems().length)return false;mood('angry','Pilih minimal satu baris dulu dong!');return true};
+
+/* ---------- flashcard ---------- */
+let F=null;
+function fBegin(items){F={deck:shuffle(items).map(it=>({it,sc:pickSc()})),i:0,yes:0,no:0,missed:new Map()};
+  $('#fSetup').hidden=true;$('#fDone').hidden=true;$('#fPlay').hidden=false;fShow();mood('happy','Ayo mulai! Tebak dulu dalam hati, baru balik kartunya.')}
+function fShow(){const c=F.deck[F.i],g=disp(c.it,c.sc);$('#fc').classList.remove('flip');
+  $('#fFront').textContent=g;$('#fBack').textContent=c.it.r;$('#fOther').textContent=(c.sc==='h'?'Katakana: ':'Hiragana: ')+(c.sc==='h'?toK(c.it.h):c.it.h);
+  $('#fNote').textContent=SIM[g]||EXTRA[c.it.h]||'';$('#fPos').textContent=`${F.i+1} / ${F.deck.length}`;$('#fMeter').style.width=F.i/F.deck.length*100+'%'}
+const fFlip=()=>{$('#fc').classList.toggle('flip');if($('#fc').classList.contains('flip')&&Math.random()<.3)mood('think','Hmm, tadi tebakanmu bener nggak?',1800)};
+function fAns(ok){const c=F.deck[F.i];
+  if(ok){F.yes++;if(F.yes%5===0)mood('tongue',`Bwee~ udah ${F.yes} kartu hafal! Pamer dikit~`);else if(Math.random()<.5)mood('happy',pick(['Sip, hafal!','Ii ne~','Lanjut!']),1600)}
+  else{F.no++;F.missed.set(c.sc+c.it.h,c);if(!F.deck.slice(F.i+1).some(x=>x.it===c.it&&x.sc===c.sc))F.deck.push(c);
+    F.no%3===0?mood('cry','Huee… nggak apa-apa, nanti diulang lagi kok…'):mood('think','Kartu ini aku taruh lagi di belakang ya.',1800)}
+  F.i++;F.i>=F.deck.length?fFinish():fShow()}
+function fFinish(){$('#fPlay').hidden=true;const miss=[...F.missed.values()];
+  $('#fDone').innerHTML=`<div class="done"><div class="sc">${F.yes}</div><p>kartu ditandai hafal${F.no?`, ${F.no} kali “belum hafal”`:''}.</p>
+   ${miss.length?`<p class="note">Yang perlu diulang:</p><div class="wl">${miss.map(c=>`<span>${disp(c.it,c.sc)}<small>${c.it.r}</small></span>`).join('')}</div>`:''}
+   <div class="row3">${miss.length?'<button class="btn bad" id="fRetry">Latih yang belum hafal</button>':''}<button class="btn ghost" id="fAgain">Pilih baris lagi</button><a class="btn pri" href="#kuis" style="text-decoration:none;text-align:center">Lanjut ke kuis</a></div></div>`;
+  $('#fDone').hidden=false;miss.length?mood('happy','Selesai! Yang merah-merah itu kita ulang ya~'):mood('proud','Semua hafal?! Sugoi! Coba kuis sekarang!',3500);
+  const r=$('#fRetry');if(r)r.onclick=()=>fBegin(miss.map(c=>c.it));$('#fAgain').onclick=fReset}
+function fReset(){F=null;$('#fPlay').hidden=true;$('#fDone').hidden=true;$('#fSetup').hidden=false}
+$('#fStart').onclick=()=>{if(!needRows())fBegin(poolItems())};
+$('#fc').onclick=fFlip;$('#fYes').onclick=()=>fAns(true);$('#fNo').onclick=()=>fAns(false);$('#fQuit').onclick=fFinish;
+$('#fSay').onclick=()=>speak($('#fFront').textContent);
+
+/* ---------- kuis ---------- */
+let Q=null,qT=0;
+const setTab=(id,attr,val)=>$$(id+' button').forEach(b=>b.classList.toggle('on',b.dataset[attr]==String(val)));
+$('#qMode').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;qMode=b.dataset.m;store.set('qmode',qMode);setTab('#qMode','m',qMode)});
+$('#qCount').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;qN=+b.dataset.n;store.set('qn',qN);setTab('#qCount','n',qN)});
+function qBegin(items,n){let list=[];while(list.length<n)list=list.concat(shuffle(items));
+  Q={list:list.slice(0,n).map(it=>({it,sc:pickSc()})),pool:items,i:0,score:0,streak:0,bad:0,wrong:[],lock:false};
+  $('#qSetup').hidden=true;$('#qDone').hidden=true;$('#qPlay').hidden=false;
+  $('#qChoices').hidden=qMode==='type';$('#qForm').hidden=qMode!=='type';qShow();mood('happy',pick(['Hajime! Ayo mulai~','Siap? Aku awasin ya!']))}
+function distract(it,n){const seen=new Set([it.r]),out=[];
+  for(const x of shuffle(Q.pool).concat(shuffle(ITEMS.filter(y=>y.g===it.g)),shuffle(ITEMS))){if(out.length>=n)break;if(!seen.has(x.r)){seen.add(x.r);out.push(x)}}return out}
+function qShow(){const q=Q.list[Q.i];Q.lock=false;$('#qNext').hidden=true;$('#qFb').textContent='';$('#qFb').className='fb';
+  $('#qPos').textContent=`Soal ${Q.i+1}/${Q.list.length}`;$('#qMeter').style.width=Q.i/Q.list.length*100+'%';$('#qScore').textContent=`Skor ${Q.score}`;
+  $('#qCombo').textContent=Q.streak>=2?`Combo ×${Q.streak}`:'';
+  const ask=$('#qAsk');ask.textContent=qMode==='r2k'?q.it.r:disp(q.it,q.sc);ask.className='ask'+(qMode==='r2k'?' r':'');
+  if(qMode==='type'){const i=$('#qIn');i.value='';i.disabled=false;i.focus();return}
+  Q.opts=shuffle([q.it,...distract(q.it,3)]);
+  $('#qChoices').innerHTML=Q.opts.map((o,i)=>`<button class="ch${qMode==='r2k'?' k':''}" data-i="${i}"><span class="n">${i+1}</span>${qMode==='r2k'?disp(o,q.sc):o.r}</button>`).join('')}
+function qAnswer(ok,given){const q=Q.list[Q.i],g=disp(q.it,q.sc);Q.lock=true;rec(q.sc,q.it.h,ok);
+  const fb=$('#qFb');
+  if(ok){Q.score++;Q.streak++;Q.bad=0;fb.textContent=`Benar! ${g} = ${q.it.r}`;fb.classList.add('ok');
+    if(Q.streak>=5)mood('proud',`Sugoi! Combo ×${Q.streak}!`,1600);
+    else if(Q.streak>=3)mood('tongue',pick([`Hehe~ gampang ya? Bwee~`,`Combo ×${Q.streak}! Sombong dikit boleh lah~`]),1600);
+    else mood('happy',pick(['Seikai! Benar~','Yatta! Pinter!','Ii ne! Lanjut!','Mantap!']),1400);
+    $('#qScore').textContent=`Skor ${Q.score}`;qT=setTimeout(qAdvance,850)}
+  else{Q.streak=0;Q.bad++;Q.wrong.push(q);fb.textContent=`Jawabannya: ${g} = ${q.it.r}`;fb.classList.add('no');
+    Q.bad>=2?mood('cry',pick(['Uwaaan… salah lagi…','Huee… pelan-pelan aja ya…']),2400)
+            :mood('angry',given?`Mou! Itu “${q.it.r}”, bukan “${given}”!`:'Ehh?! Perhatikan bentuknya dong!',2400);
+    $('#qNext').hidden=false;$('#qNext').focus()}
+  $('#qCombo').textContent=Q.streak>=2?`Combo ×${Q.streak}`:''}
+function qChoose(i){if(Q.lock)return;const q=Q.list[Q.i],o=Q.opts[i];if(!o)return;const ok=o.r===q.it.r;
+  $$('#qChoices .ch').forEach((b,j)=>{b.disabled=true;if(Q.opts[j].r===q.it.r)b.classList.add('ok');else if(j===i)b.classList.add('no')});
+  qAnswer(ok,qMode==='r2k'?disp(o,q.sc):o.r)}
+$('#qChoices').addEventListener('click',e=>{const b=e.target.closest('[data-i]');if(b)qChoose(+b.dataset.i)});
+$('#qForm').addEventListener('submit',e=>{e.preventDefault();if(Q.lock){if(!$('#qNext').hidden)qAdvance();return}
+  const v=$('#qIn').value.trim().toLowerCase();if(!v)return;const r=Q.list[Q.i].it.r;$('#qIn').disabled=true;qAnswer(v===r||(ALT[r]||[]).includes(v),v)});
+function qAdvance(){clearTimeout(qT);if(!Q)return;Q.i++;Q.i>=Q.list.length?qFinish():qShow()}
+$('#qNext').onclick=qAdvance;
+function qFinish(){clearTimeout(qT);const n=Q.list.length,pct=Math.round(Q.score/n*100);$('#qPlay').hidden=true;
+  store.set('quizzes',store.get('quizzes',0)+1);if(pct>store.get('best',0))store.set('best',pct);
+  const uniq=[...new Map(Q.wrong.map(w=>[w.sc+w.it.h,w])).values()];
+  const msg=pct>=90?['proud','Sempurna-ish! Kamu jago banget!']:pct>=60?['tongue','Lumayan~ tapi aku yakin kamu bisa lebih. Bwee~']:pct>=40?['think','Hmm… masih ada yang ketuker ya. Ulangi yang salah yuk.']:['cry','Uwaaan… nggak apa-apa, kita latihan bareng lagi!'];
+  $('#qDone').innerHTML=`<div class="done"><div class="sc">${Q.score}/${n}</div><p><strong>${pct}%</strong> benar</p>
+   ${uniq.length?`<p class="note">Yang salah:</p><div class="wl">${uniq.map(w=>`<span>${disp(w.it,w.sc)}<small>${w.it.r}</small></span>`).join('')}</div>`:''}
+   <div class="row3">${uniq.length?'<button class="btn bad" id="qRetry">Ulangi yang salah</button>':''}<button class="btn ghost" id="qAgain">Atur ulang</button><button class="btn pri" id="qSame">Main lagi</button></div></div>`;
+  $('#qDone').hidden=false;mood(msg[0],msg[1],4000);
+  const pool=Q.pool,r=$('#qRetry');if(r)r.onclick=()=>qBegin(uniq.map(w=>w.it),uniq.length);
+  $('#qAgain').onclick=qReset;$('#qSame').onclick=()=>qBegin(pool,qN)}
+function qReset(){clearTimeout(qT);Q=null;$('#qPlay').hidden=true;$('#qDone').hidden=true;$('#qSetup').hidden=false}
+$('#qStart').onclick=()=>{if(!needRows())qBegin(poolItems(),qN)};
+$('#qQuit').onclick=()=>{const k=Q?Q.i+(Q.lock?1:0):0;if(k>0){Q.list=Q.list.slice(0,k);qFinish()}else qReset()};
+
+/* ---------- keyboard ---------- */
+addEventListener('keydown',e=>{
+  if(!$('#ov').hidden){if(e.key==='Escape')closeDlg();return}
+  const v=document.body.dataset.v;
+  if(v==='flashcard'&&F&&!$('#fPlay').hidden){
+    if(e.key===' '&&!e.target.closest('button,input')){e.preventDefault();fFlip()}
+    else if(e.key==='ArrowLeft')fAns(false);else if(e.key==='ArrowRight')fAns(true)}
+  if(v==='kuis'&&Q&&!$('#qPlay').hidden&&qMode!=='type'&&/^[1-4]$/.test(e.key))qChoose(+e.key-1)});
+
+/* ---------- routing ---------- */
+const VIEWS=['menu','belajar','flashcard','kuis'];
+const ENTER={menu(){renderProg();greet();mood('happy',null,1600)},
+  belajar(){renderTable();mood('think','Ketuk huruf mana aja buat lihat detailnya~')},
+  flashcard(){fReset();renderPickers();say('Pilih baris yang mau dihafal, terus mulai!')},
+  kuis(){qReset();renderPickers();setTab('#qMode','m',qMode);setTab('#qCount','n',qN);mood('tongue','Kuis nih~ jangan sampai bikin aku nangis ya!')}};
+function route(){let v=location.hash.slice(1);if(!VIEWS.includes(v))v='menu';
+  VIEWS.forEach(x=>$('#v-'+x).hidden=x!==v);document.body.dataset.v=v;ENTER[v]();scrollTo(0,0)}
+addEventListener('hashchange',route);
+setScript(script);route();nudgeIdle();
+})();
+</script>
+</body>
+</html>
