@@ -49,7 +49,7 @@ main{grid-area:main}
 .moods{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
 .moods span{width:100%;text-align:center;font-size:13px;color:var(--mute)}
 .mchip{flex:none;border:1.5px solid var(--line);background:var(--card);border-radius:999px;padding:6px 12px;font-size:14px;font-weight:700;cursor:pointer;min-height:36px;white-space:nowrap;transition:.2s}
-.mchip:hover{border-color:var(--navy2);color:var(--navy2)}
+.mchip:hover{border-color:var(--ok);color:var(--ok)}
 
 /* mascot motion */
 .kana .bodyg{animation:bob 2.8s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}
@@ -220,6 +220,29 @@ main{grid-area:main}
 .cmw{width:100%;aspect-ratio:200/232;display:flex;align-items:flex-end;justify-content:center}
 .cmw img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 10px 12px rgba(12,32,80,.25))}
 .kana .fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.kana.custom .cmw{transform-origin:50% 100%;will-change:transform}
+.kana.custom[data-m=idle] .cmw{animation:cBreathe 3.2s ease-in-out infinite}
+@keyframes cBreathe{0%,100%{transform:scale(1,1) rotate(0)}25%{transform:scale(1.02,.98) rotate(-1.5deg)}50%{transform:scale(.99,1.02) translateY(-3px)}75%{transform:scale(1.02,.98) rotate(1.5deg)}}
+.kana.custom[data-m=happy] .cmw{animation:cHop .7s cubic-bezier(.3,.7,.4,1) 3}
+@keyframes cHop{0%{transform:scale(1.1,.9)}30%{transform:translateY(-22px) scale(.94,1.07) rotate(-5deg)}55%{transform:translateY(0) scale(1.12,.88)}75%{transform:translateY(-7px) scale(.98,1.03) rotate(4deg)}100%{transform:none}}
+.kana.custom[data-m=proud] .cmw{animation:cSpin .9s cubic-bezier(.3,.7,.4,1),cGlow 1.2s ease-in-out .9s 2}
+@keyframes cSpin{0%{transform:scale(1.1,.9)}40%{transform:translateY(-26px) rotate(180deg) scale(.95)}80%{transform:translateY(0) rotate(360deg) scale(1.1,.9)}100%{transform:rotate(360deg)}}
+@keyframes cGlow{50%{filter:drop-shadow(0 0 16px rgba(255,210,87,.95));transform:scale(1.06)}}
+.kana.custom[data-m=cry] .cmw{animation:cSob .45s ease-in-out infinite;filter:saturate(.75) drop-shadow(0 0 12px rgba(110,190,255,.7))}
+@keyframes cSob{0%,100%{transform:scale(1,1)}30%{transform:translateY(3px) scale(1.04,.95)}60%{transform:translateY(-2px) scale(.97,1.03) rotate(-1deg)}}
+.kana.custom[data-m=angry] .cmw{animation:cRage .12s linear infinite,cRed .6s ease-in-out infinite;transform-origin:50% 60%}
+@keyframes cRage{0%,100%{transform:translateX(0) scale(1.06)}25%{transform:translateX(-5px) rotate(-2deg) scale(1.06)}75%{transform:translateX(5px) rotate(2deg) scale(1.06)}}
+@keyframes cRed{50%{filter:drop-shadow(0 0 14px rgba(255,60,90,.9)) saturate(1.3)}}
+.kana.custom[data-m=tongue] .cmw{animation:cWiggle .5s ease-in-out infinite alternate}
+@keyframes cWiggle{from{transform:rotate(-8deg) skewX(4deg)}to{transform:rotate(8deg) skewX(-4deg) translateY(-4px)}}
+.kana.custom[data-m=shock] .cmw{animation:cShock .6s cubic-bezier(.2,1.6,.4,1)}
+@keyframes cShock{0%{transform:scale(1)}20%{transform:translateY(-24px) scale(1.25,.85)}45%{transform:translateY(-14px) scale(.92,1.12)}70%{transform:translateY(0) scale(1.05,.95)}100%{transform:none}}
+.kana.custom[data-m=think] .cmw{animation:cThink 2.6s ease-in-out infinite}
+@keyframes cThink{0%,100%{transform:rotate(-6deg) translateX(-3px)}50%{transform:rotate(6deg) translateX(3px)}}
+.kana.custom[data-m=sleep] .cmw{animation:cSleep 4s ease-in-out infinite;filter:brightness(.82)}
+@keyframes cSleep{0%,100%{transform:rotate(-9deg) scale(1,1)}50%{transform:rotate(-9deg) scale(1.04,.96) translateY(3px)}}
+.rise{animation:rise 1.8s ease-out infinite;opacity:0}
+@keyframes rise{15%{opacity:1}100%{opacity:0;transform:translateY(-46px) scale(1.2)}}
 .dlg.wide{width:min(100%,660px);max-height:90vh;overflow:auto}
 .slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin:12px 0}
 .slot{border:2px dashed var(--line);border-radius:16px;padding:8px;display:flex;flex-direction:column;gap:6px;align-items:center;text-align:center;font-size:14px}
@@ -431,21 +454,27 @@ ${L('M66 60 Q100 44 134 58',3,'rgba(255,255,255,.22)')}
 <g class="arm armR"><ellipse cx="140" cy="172" rx="9" ry="17" fill="#fbfcff" stroke="#c9d5ee" stroke-width="2"/><circle cx="140" cy="189" r="7.5" fill="${SK}"/></g>
 </g></svg>`;
 const VEIN=L('M147 60 Q152 65 157 60',3.2,'#e5303f')+L('M147 76 Q152 71 157 76',3.2,'#e5303f')+L('M144 63 Q149 68 144 73',3.2,'#e5303f')+L('M160 63 Q155 68 160 73',3.2,'#e5303f');
-const FX={happy:spark(170,40,9)+spark(30,60,7)+spark(164,118,5),
+const heart=(x,y,d,c='#ff7d95')=>`<g class="rise" style="animation-delay:${d}s"><path d="M${x} ${y+6}c-8-6-12-10-12-15a6 6 0 0 1 12-2a6 6 0 0 1 12 2c0 5-4 9-12 15z" fill="${c}"/></g>`;
+const FX={happy:spark(170,40,9)+spark(30,60,7)+spark(164,118,5)+heart(34,110,0)+heart(168,80,.6)+heart(100,20,1.2,'#ffb3c4'),
  proud:spark(172,36,11)+spark(28,52,9)+spark(166,110,7)+spark(38,128,6)+spark(100,8,7),
  cry:['62,110,5,0','138,110,5,.5','70,122,4,.25','130,122,4,.75'].map(v=>{const[x,y,r,d]=v.split(',');return `<circle class="drip" cx="${x}" cy="${y}" r="${r}" fill="#8fd0ff" style="animation-delay:${d}s"/>`}).join(''),
  angry:`<g transform="translate(14 -30)"><g class="vein">${VEIN}</g></g>`,
- shock:`<g transform="translate(16 -40)">${P('M150 76 Q157 87 154 92 Q150 96 146 92 Q143 87 150 76Z','#9fd6ff')}</g>`,
+ shock:`<text x="20" y="44" font-size="38" font-weight="900" fill="#ff5468" font-family="sans-serif">!!</text><g transform="translate(16 -40)">${P('M150 76 Q157 87 154 92 Q150 96 146 92 Q143 87 150 76Z','#9fd6ff')}</g>`,
  think:'<text class="qm" x="164" y="36" font-size="34">?</text>',
- tongue:'<text class="qm" x="156" y="40" font-size="22">~♪</text>',
+ tongue:'<text class="qm rise" x="150" y="50" font-size="24">♪</text><text class="qm rise" x="34" y="60" font-size="20" style="animation-delay:.7s">♫</text><text class="qm" x="148" y="110" font-size="18">bwee~</text>',
  sleep:'<text class="zz" x="148" y="52" font-size="16">z</text><text class="zz" x="158" y="38" font-size="20" style="animation-delay:.8s">z</text><text class="zz" x="168" y="22" font-size="24" style="animation-delay:1.6s">Z</text>'};
 const CM={on:store.get('cmOn',false),urls:{}};
 const kana=$('#kana');
 function paint(m){if(kana.classList.contains('custom')){const img=kana.querySelector('img'),u=CM.urls[m]||(m==='idle'?null:CM.urls.idle&&!CM.urls.main?CM.urls.idle:null)||CM.urls.main||CM.urls.idle||Object.values(CM.urls)[0];
-  if(img.getAttribute('src')!==u)img.src=u;kana.querySelector('.fx').innerHTML=FX[m]||''}else{kana.querySelector('#face').innerHTML=FACE[m]}}
+  if(img.getAttribute('src')!==u){img.src=u;if(!matchMedia('(prefers-reduced-motion: reduce)').matches&&img.animate)img.animate([{transform:'scale(.82)',opacity:.3},{transform:'scale(1)',opacity:1}],{duration:280,easing:'cubic-bezier(.3,1.6,.5,1)'})}kana.querySelector('.fx').innerHTML=FX[m]||''}else{kana.querySelector('#face').innerHTML=FACE[m]}}
 function applyMascot(){const use=CM.on&&Object.keys(CM.urls).length>0;kana.classList.toggle('custom',use);
   kana.innerHTML=use?'<div class="cmw bodyg"><img alt=""></div><svg class="fx" viewBox="0 0 200 232" aria-hidden="true"></svg>':SVG;paint(kana.dataset.m||'idle')}
 kana.innerHTML=SVG;paint('idle');
+setInterval(()=>{if(!kana.classList.contains('custom')||kana.dataset.m!=='idle'||document.hidden)return;const img=kana.querySelector('img');
+  if(img&&img.animate&&!matchMedia('(prefers-reduced-motion: reduce)').matches)img.animate(pick([
+    [{transform:'none'},{transform:'translateY(-12px) scale(.96,1.05)'},{transform:'scale(1.06,.94)'},{transform:'none'}],
+    [{transform:'none'},{transform:'rotate(-8deg)'},{transform:'rotate(6deg)'},{transform:'none'}],
+    [{transform:'none'},{transform:'scale(1.08,.92)'},{transform:'translateY(-8px) rotate(4deg)'},{transform:'none'}]]),{duration:700,easing:'ease-in-out'})},6500);
 let moodT=0,idleT=0;
 function say(t){const b=$('#bubble');b.classList.remove('in');void b.offsetWidth;b.textContent=t;b.classList.add('in')}
 function mood(m,txt,ms=2600){clearTimeout(moodT);kana.removeAttribute('data-m');void kana.offsetWidth;kana.dataset.m=m;paint(m);
