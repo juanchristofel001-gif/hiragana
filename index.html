@@ -48,7 +48,7 @@ main{grid-area:main}
 .kana svg{display:block;width:100%;height:auto;overflow:visible}
 .moods{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
 .moods span{width:100%;text-align:center;font-size:13px;color:var(--mute)}
-.mchip{border:1.5px solid var(--line);background:var(--card);border-radius:999px;padding:6px 12px;font-size:14px;font-weight:700;cursor:pointer;min-height:36px;white-space:nowrap;transition:.2s}
+.mchip{flex:none;border:1.5px solid var(--line);background:var(--card);border-radius:999px;padding:6px 12px;font-size:14px;font-weight:700;cursor:pointer;min-height:36px;white-space:nowrap;transition:.2s}
 .mchip:hover{border-color:var(--navy2);color:var(--navy2)}
 
 /* mascot motion */
@@ -235,7 +235,8 @@ main{grid-area:main}
  .kana{grid-area:k;max-width:88px}
  .bubble{grid-area:b;min-height:0;text-align:left;font-size:15px;place-items:center start;box-shadow:none}
  .bubble::after{left:-10px;top:50%;bottom:auto;transform:translateY(-50%) rotate(135deg)}
- .moods{grid-area:m;flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;padding-bottom:2px}
+ .moods{grid-area:m;flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;padding-bottom:4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+ .moods::-webkit-scrollbar{display:none}
  .moods span{display:none}
  body:not([data-v=menu]) .moods{display:none}
  main{padding-top:16px}
