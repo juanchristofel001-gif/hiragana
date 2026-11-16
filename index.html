@@ -215,6 +215,19 @@ main{grid-area:main}
 .wl span{background:var(--soft);border-radius:12px;padding:6px 10px;font-size:20px;font-weight:700}
 .wl small{font-size:13px;color:var(--mute);margin-left:4px}
 
+/* custom mascot */
+.kana.custom{position:relative}
+.cmw{width:100%;aspect-ratio:200/232;display:flex;align-items:flex-end;justify-content:center}
+.cmw img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 10px 12px rgba(12,32,80,.25))}
+.kana .fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.dlg.wide{width:min(100%,660px);max-height:90vh;overflow:auto}
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin:12px 0}
+.slot{border:2px dashed var(--line);border-radius:16px;padding:8px;display:flex;flex-direction:column;gap:6px;align-items:center;text-align:center;font-size:14px}
+.slot .pv{width:100%;aspect-ratio:1;display:grid;place-items:center;background:var(--soft);border-radius:12px;overflow:hidden;color:var(--mute);font-size:13px}
+.slot .pv img{max-width:100%;max-height:100%;object-fit:contain}
+.up{display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.tg{display:flex;align-items:center;gap:10px;font-weight:700;min-height:44px;cursor:pointer}
+.tg input{width:22px;height:22px;accent-color:var(--navy2)}
 @media(max-width:820px){
  .top{position:static}
  .wrap{grid-template-columns:minmax(0,1fr);grid-template-areas:"buddy" "main";padding-top:0}
@@ -258,7 +271,7 @@ main{grid-area:main}
     <button class="mchip" data-mood="happy">Senang</button><button class="mchip" data-mood="cry">Nangis</button>
     <button class="mchip" data-mood="angry">Marah</button><button class="mchip" data-mood="tongue">Melet</button>
     <button class="mchip" data-mood="shock">Kaget</button><button class="mchip" data-mood="think">Mikir</button>
-    <button class="mchip" data-mood="proud">Bangga</button><button class="mchip" data-mood="sleep">Tidur</button>
+    <button class="mchip" data-mood="proud">Bangga</button><button class="mchip" data-mood="sleep">Tidur</button><button class="mchip" id="cmBtn">Atur maskot…</button>
   </div>
 </aside>
 
@@ -271,6 +284,7 @@ main{grid-area:main}
       <a class="mode" href="#flashcard"><b class="gl">カ</b><span><strong>Flashcard</strong><small>Balik kartu, tandai yang sudah hafal, yang belum diulang</small></span></a>
       <a class="mode" href="#kuis"><b class="gl">？</b><span><strong>Kuis</strong><small>Pilihan ganda dua arah atau ketik romaji, lengkap dengan combo</small></span></a>
     </div>
+    <p class="note"><button class="link" id="cmBtn2" style="padding-left:0">Ganti maskot dengan gambar sendiri →</button></p>
     <div class="panel"><h3>Progres kamu</h3><div id="prog"></div>
       <p class="note">Sebuah kana dihitung “dikuasai” kalau sudah dijawab benar minimal 3 kali di kuis dengan akurasi ≥ 80%. Progres hanya tersimpan di browser ini.</p></div>
   </section>
@@ -415,11 +429,26 @@ ${L('M66 60 Q100 44 134 58',3,'rgba(255,255,255,.22)')}
 <g class="arm armL"><ellipse cx="60" cy="172" rx="9" ry="17" fill="#fbfcff" stroke="#c9d5ee" stroke-width="2"/><circle cx="60" cy="189" r="7.5" fill="${SK}"/></g>
 <g class="arm armR"><ellipse cx="140" cy="172" rx="9" ry="17" fill="#fbfcff" stroke="#c9d5ee" stroke-width="2"/><circle cx="140" cy="189" r="7.5" fill="${SK}"/></g>
 </g></svg>`;
-const kana=$('#kana');kana.innerHTML=SVG;const face=kana.querySelector('#face');face.innerHTML=FACE.idle;
+const VEIN=L('M147 60 Q152 65 157 60',3.2,'#e5303f')+L('M147 76 Q152 71 157 76',3.2,'#e5303f')+L('M144 63 Q149 68 144 73',3.2,'#e5303f')+L('M160 63 Q155 68 160 73',3.2,'#e5303f');
+const FX={happy:spark(170,40,9)+spark(30,60,7)+spark(164,118,5),
+ proud:spark(172,36,11)+spark(28,52,9)+spark(166,110,7)+spark(38,128,6)+spark(100,8,7),
+ cry:['62,110,5,0','138,110,5,.5','70,122,4,.25','130,122,4,.75'].map(v=>{const[x,y,r,d]=v.split(',');return `<circle class="drip" cx="${x}" cy="${y}" r="${r}" fill="#8fd0ff" style="animation-delay:${d}s"/>`}).join(''),
+ angry:`<g transform="translate(14 -30)"><g class="vein">${VEIN}</g></g>`,
+ shock:`<g transform="translate(16 -40)">${P('M150 76 Q157 87 154 92 Q150 96 146 92 Q143 87 150 76Z','#9fd6ff')}</g>`,
+ think:'<text class="qm" x="164" y="36" font-size="34">?</text>',
+ tongue:'<text class="qm" x="156" y="40" font-size="22">~♪</text>',
+ sleep:'<text class="zz" x="148" y="52" font-size="16">z</text><text class="zz" x="158" y="38" font-size="20" style="animation-delay:.8s">z</text><text class="zz" x="168" y="22" font-size="24" style="animation-delay:1.6s">Z</text>'};
+const CM={on:store.get('cmOn',false),urls:{}};
+const kana=$('#kana');
+function paint(m){if(kana.classList.contains('custom')){const img=kana.querySelector('img'),u=CM.urls[m]||(m==='idle'?null:CM.urls.idle&&!CM.urls.main?CM.urls.idle:null)||CM.urls.main||CM.urls.idle||Object.values(CM.urls)[0];
+  if(img.getAttribute('src')!==u)img.src=u;kana.querySelector('.fx').innerHTML=FX[m]||''}else{kana.querySelector('#face').innerHTML=FACE[m]}}
+function applyMascot(){const use=CM.on&&Object.keys(CM.urls).length>0;kana.classList.toggle('custom',use);
+  kana.innerHTML=use?'<div class="cmw bodyg"><img alt=""></div><svg class="fx" viewBox="0 0 200 232" aria-hidden="true"></svg>':SVG;paint(kana.dataset.m||'idle')}
+kana.innerHTML=SVG;paint('idle');
 let moodT=0,idleT=0;
 function say(t){const b=$('#bubble');b.classList.remove('in');void b.offsetWidth;b.textContent=t;b.classList.add('in')}
-function mood(m,txt,ms=2600){clearTimeout(moodT);kana.removeAttribute('data-m');void kana.offsetWidth;kana.dataset.m=m;face.innerHTML=FACE[m];
-  if(txt)say(txt);if(ms&&m!=='idle')moodT=setTimeout(()=>{kana.dataset.m='idle';face.innerHTML=FACE.idle},ms)}
+function mood(m,txt,ms=2600){clearTimeout(moodT);kana.removeAttribute('data-m');void kana.offsetWidth;kana.dataset.m=m;paint(m);
+  if(txt)say(txt);if(ms&&m!=='idle')moodT=setTimeout(()=>{kana.dataset.m='idle';paint('idle')},ms)}
 function nudgeIdle(){clearTimeout(idleT);idleT=setTimeout(()=>mood('sleep','Zzz… panggil aku kalau mau latihan lagi ya…',0),45000)}
 addEventListener('pointerdown',e=>{if(kana.dataset.m==='sleep'&&!kana.contains(e.target))mood('shock','Eh?! Aku nggak tidur kok!');nudgeIdle()},true);
 addEventListener('keydown',nudgeIdle,true);
@@ -460,7 +489,7 @@ function openDetail(h){const it=ITEMS.find(i=>i.h===h),k=toK(h),sh=stats['h:'+h]
    <p class="rom">${it.r}${EXTRA[h]?`<small>${EXTRA[h]}</small>`:''}</p>${tips}
    <p class="note" style="text-align:center">Kuis: hiragana ${sh.c} benar / ${sh.w} salah · katakana ${sk.c} benar / ${sk.w} salah</p>
    <div class="row3"><button class="btn ghost" data-say>Dengar</button><button class="btn pri" data-close>Tutup</button></div>`;
-  lastFocus=document.activeElement;$('#ov').hidden=false;$('#dlg [data-close]').focus();speak(h);
+  $('#dlg').classList.remove('wide');lastFocus=document.activeElement;$('#ov').hidden=false;$('#dlg [data-close]').focus();speak(h);
   mood(pick(['happy','think']),`Ini “${it.r}”. ${pick(['Coba ucapkan bareng aku!','Hafalkan bentuknya ya~','Gampang kan?'])}`)}
 const closeDlg=()=>{$('#ov').hidden=true;lastFocus&&lastFocus.focus()};
 $('#ov').addEventListener('click',e=>{if(e.target.id==='ov'||e.target.closest('[data-close]'))closeDlg();else if(e.target.closest('[data-say]'))speak($('#dlg .big').textContent)});
@@ -553,6 +582,51 @@ function qFinish(){clearTimeout(qT);const n=Q.list.length,pct=Math.round(Q.score
 function qReset(){clearTimeout(qT);Q=null;$('#qPlay').hidden=true;$('#qDone').hidden=true;$('#qSetup').hidden=false}
 $('#qStart').onclick=()=>{if(!needRows())qBegin(poolItems(),qN)};
 $('#qQuit').onclick=()=>{const k=Q?Q.i+(Q.lock?1:0):0;if(k>0){Q.list=Q.list.slice(0,k);qFinish()}else qReset()};
+
+/* ---------- maskot custom ---------- */
+const SLOTS=[['main','Utama'],['idle','Diam'],['happy','Senang'],['cry','Nangis'],['angry','Marah'],['tongue','Melet'],['shock','Kaget'],['think','Mikir'],['proud','Bangga'],['sleep','Tidur']];
+let dbp=null;
+const db=()=>dbp||(dbp=new Promise((res,rej)=>{try{const r=indexedDB.open('kanadojo',1);r.onupgradeneeded=()=>r.result.createObjectStore('m');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}}));
+const tx=(mode,fn)=>db().then(d=>new Promise((res,rej)=>{const t=d.transaction('m',mode);fn(t.objectStore('m'));t.oncomplete=()=>res();t.onerror=()=>rej(t.error)}));
+const idbAll=()=>db().then(d=>new Promise((res,rej)=>{const o={},c=d.transaction('m','readonly').objectStore('m').openCursor();
+  c.onsuccess=()=>{const k=c.result;if(k){o[k.key]=k.value;k.continue()}else res(o)};c.onerror=()=>rej(c.error)}));
+const setUrl=(k,b)=>{if(CM.urls[k])URL.revokeObjectURL(CM.urls[k]);if(b)CM.urls[k]=URL.createObjectURL(b);else delete CM.urls[k]};
+const msg=t=>{const m=$('#cmMsg');if(m)m.textContent=t};
+const prep=f=>new Promise(res=>{if(/gif|svg/.test(f.type)){res(f);return}const u=URL.createObjectURL(f),im=new Image();
+  im.onload=()=>{const sc=Math.min(1,640/Math.max(im.width,im.height));URL.revokeObjectURL(u);if(sc===1&&f.size<900000){res(f);return}
+    const c=document.createElement('canvas');c.width=Math.round(im.width*sc);c.height=Math.round(im.height*sc);c.getContext('2d').drawImage(im,0,0,c.width,c.height);c.toBlob(b=>res(b||f),'image/png')};
+  im.onerror=()=>{URL.revokeObjectURL(u);res(f)};im.src=u});
+const b2d=b=>new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr.result);fr.readAsDataURL(b)});
+const d2b=d=>{const i=d.indexOf(','),mime=(d.slice(0,i).match(/data:([^;]+)/)||[])[1]||'image/png',bin=atob(d.slice(i+1)),u=new Uint8Array(bin.length);for(let j=0;j<bin.length;j++)u[j]=bin.charCodeAt(j);return new Blob([u],{type:mime})};
+function renderCM(){$('#dlg').innerHTML=`<h2 style="font-size:24px">Maskot custom</h2>
+ <p class="note">Upload gambar dari perangkatmu. PNG transparan paling bagus, GIF juga bisa. Mood yang kosong memakai gambar <b>Utama</b>; gerakan dan efeknya tetap jalan. Gambar hanya tersimpan di browser ini. Pakai <b>Ekspor</b> lalu <b>Impor</b> untuk memindahkannya ke perangkat lain.</p>
+ ${CM.noDb?'<p class="tip">Browser ini tidak mengizinkan penyimpanan (mungkin mode incognito). Gambar akan hilang saat halaman ditutup.</p>':''}
+ <label class="tg"><input type="checkbox" id="cmOn" ${CM.on?'checked':''}> Pakai maskot custom (matikan untuk kembali ke Ruri-chan)</label>
+ <div class="slots">${SLOTS.map(([k,l])=>`<div class="slot"><div class="pv">${CM.urls[k]?`<img src="${CM.urls[k]}" alt="">`:'kosong'}</div><b>${l}</b>
+   <label class="btn ghost sm up">${CM.urls[k]?'Ganti':'Pilih gambar'}<input type="file" accept="image/*" data-slot="${k}" hidden></label>${CM.urls[k]?`<button type="button" class="link" data-del="${k}">Hapus</button>`:''}</div>`).join('')}</div>
+ <div class="row3"><button type="button" class="btn ghost" data-export>Ekspor maskot</button><label class="btn ghost up">Impor file<input type="file" accept=".json,application/json" data-import hidden></label></div>
+ <p class="note" id="cmMsg" aria-live="polite"></p>
+ <div class="row3 end"><button type="button" class="link" data-reset style="color:var(--bad)">Hapus semua gambar</button><button type="button" class="btn pri" data-close>Selesai</button></div>`}
+function openCM(){renderCM();$('#dlg').classList.add('wide');lastFocus=document.activeElement;$('#ov').hidden=false;$('#dlg [data-close]').focus()}
+$('#cmBtn').onclick=openCM;$('#cmBtn2').onclick=openCM;
+async function saveSlot(k,b){try{await tx('readwrite',st=>st.put(b,k))}catch(e){CM.noDb=true}setUrl(k,b)}
+$('#dlg').addEventListener('change',async e=>{const t=e.target;
+  if(t.id==='cmOn'){CM.on=t.checked;store.set('cmOn',CM.on);applyMascot();mood(CM.on?'happy':'shock',CM.on?'Penampilan baru!':'Aku balik lagi~');return}
+  if(t.dataset.slot&&t.files[0]){await saveSlot(t.dataset.slot,await prep(t.files[0]));CM.on=true;store.set('cmOn',true);applyMascot();renderCM();mood('happy','Wah, penampilan baru!');return}
+  if(t.hasAttribute('data-import')&&t.files[0]){try{const j=JSON.parse(await t.files[0].text());if(j.app!=='kana-dojo-maskot'||!j.images)throw 0;
+      const keys=SLOTS.map(x=>x[0]);let n=0;for(const k in j.images){if(keys.includes(k)&&/^data:image\//.test(j.images[k])){await saveSlot(k,d2b(j.images[k]));n++}}
+      CM.on=true;store.set('cmOn',true);applyMascot();renderCM();msg(`${n} gambar berhasil diimpor.`);mood('proud','Pindahan selesai!')}
+    catch(err){msg('File tidak dikenali. Pakai file hasil Ekspor dari Kana Dojo ya.')}}});
+$('#dlg').addEventListener('click',async e=>{const t=e.target.closest('[data-del],[data-export],[data-reset]');if(!t)return;
+  if(t.dataset.del){try{await tx('readwrite',st=>st.delete(t.dataset.del))}catch(err){}setUrl(t.dataset.del,null);applyMascot();renderCM()}
+  else if(t.hasAttribute('data-export')){const images={};for(const k in CM.urls){const b=await fetch(CM.urls[k]).then(r=>r.blob()).catch(()=>null);if(b)images[k]=await b2d(b)}
+    if(!Object.keys(images).length){msg('Belum ada gambar untuk diekspor.');return}
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({app:'kana-dojo-maskot',v:1,images})],{type:'application/json'}));
+    a.download='kana-dojo-maskot.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+    msg('File kana-dojo-maskot.json sudah diunduh. Kirim ke perangkat lain, lalu buka Atur maskot → Impor file.')}
+  else if(t.dataset.sure){try{await tx('readwrite',st=>st.clear())}catch(err){}Object.keys(CM.urls).forEach(k=>setUrl(k,null));applyMascot();renderCM()}
+  else{t.dataset.sure=1;t.textContent='Yakin? Klik sekali lagi untuk menghapus'}});
+idbAll().then(all=>{for(const k in all)setUrl(k,all[k]);applyMascot()}).catch(()=>{CM.noDb=true});
 
 /* ---------- keyboard ---------- */
 addEventListener('keydown',e=>{
